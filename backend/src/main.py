@@ -10,6 +10,30 @@ load_dotenv()
 
 app = FastAPI()
 
+# fetch recipe slugs from gousto api
+@app.get("/recipes/slugs", response_model=List[RecipeSlug])
+async def fetch_recipe_slugs(page: int, session: Session = Depends(get_session)):
+    """
+    Fetch recipe slugs from Gousto API.
+    """
+    from .gousto_fetcher import get_recipe_slugs_from_page
+    try:
+        recipe_slugs = await get_recipe_slugs_from_page(page)
+        return recipe_slugs
+    except Exception as e:
+        return {"error": str(e)}
+
+
+
+
+
+
+
+
+
+
+
+
 # fetch recipes from gousto api
 # will take a while, will return a list of changed recipes.
 # modified

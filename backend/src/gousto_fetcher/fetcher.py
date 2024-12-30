@@ -1,15 +1,14 @@
-from gousto_fetcher.constants import GET_RECIPES_ENDPOINT,GET_RECIPE_INFO_ENDPOINT, GET_RECIPES_PAGE_LIMIT
-from gousto_fetcher.errors import NoMoreRecipesError
-from gousto_fetcher.utils import page_to_offset, strip_recipes_prefix
-from ..models import RecipeURL
+from .constants import GET_RECIPES_ENDPOINT,GET_RECIPE_INFO_ENDPOINT, GET_RECIPES_PAGE_LIMIT
+from .errors import NoMoreRecipesError
+from .utils import page_to_offset, strip_recipes_prefix
 import aiohttp
 import asyncio
 import json
 import logging
 
-async def get_recipe_links_from_page(page: int) -> list[RecipeURL]:
+async def get_recipe_slugs_from_page(page: int) -> list[str]:
     """
-    Takes a page number and returns a list of recipe links
+    Takes a page number and returns a list of recipe slugs
 
     Raises:
         aiohttp.ClientResponseError: If the response status code is not 200.
@@ -33,26 +32,28 @@ async def get_recipe_links_from_page(page: int) -> list[RecipeURL]:
             
             data = await response.json()
             entries = data["data"]["entries"]
-            recipe_url_list : list[RecipeURL] = []
+            recipe_slug_list : list[str] = []
 
             # check if there are any more recipes to scrape
             if len(entries) == 0:
                 raise NoMoreRecipesError
 
             for entry in entries:
-                recipe_url_list.append(RecipeURL(url=entry["url"]))
-            
-            return recipe_url_list
 
-async def get_all_recipes(max_concurrent_requests=5) -> list[RecipeURL]:
+                slug = strip_recipes_prefix(entry["url"])
+                recipe_slug_list.append(slug)
+            
+            return recipe_slug_list
+
+async def get_all_recipe_slugs(max_concurrent_requests=5) -> list[str]:
     page = 0
-    all_recipes : list[RecipeURL] = []
+    all_recipe_slugs : list[str] = []
 
     while True:
         try:
             # Create a set of tasks, respecting the max concurrency limit
             tasks = [
-                get_recipe_links_from_page(page + i)
+                get_recipe_slugs_from_page(page + i)
                 for i in range(max_concurrent_requests)
             ]
 
@@ -69,7 +70,7 @@ async def get_all_recipes(max_concurrent_requests=5) -> list[RecipeURL]:
                     # Handle other exceptions if necessary
                     logging.error(f"Error occurs: {result}")
                 else:
-                    all_recipes.extend(result)
+                    all_recipe_slugs.extend(result)
 
             if page_completed:
                 break
@@ -78,22 +79,23 @@ async def get_all_recipes(max_concurrent_requests=5) -> list[RecipeURL]:
         except NoMoreRecipesError:
             break
 
-    return all_recipes
+    return all_recipe_slugs
         
-async def get_recipe_info_from_link(url: str) -> RecipeInfo:
+async def get_recipe_info_from_slug(slug: str) -> dict:
     """
-    Takes a recipe url and returns a RecipeInfo object
+    Takes a recipe slug and returns its recipe info decoded json directly from the Gousto API response
+    Cannot find an actual schema for it :/
 
     Args:
-        url: The url of the recipe to scrape. Is in the format returned by get_recipe_links_from_page, which is of the form "/recipes/{recipe_name}"
+        url: The url recipe slug of the recipe to scrape
 
     Raises:
         aiohttp.ClientResponseError: If the response status code is not 200.
     """
-    url = strip_recipes_prefix(url)
-    print(f"stripped_url: {url}")
+    slug = strip_recipes_prefix(slug)
+    logging.debug(f"stripped slug: {slug}")
 
-    api_url = f"{GET_RECIPE_INFO_ENDPOINT}{url}"
+    api_url = f"{GET_RECIPE_INFO_ENDPOINT}/recipes/{slug}"
 
     async with aiohttp.ClientSession() as session:
         async with session.get(api_url) as response:
@@ -106,11 +108,4 @@ async def get_recipe_info_from_link(url: str) -> RecipeInfo:
                 )
             
             data = await response.json()
-            
-            ingredients = [ingredient["label"] for ingredient in data["entry"]["ingredients"]]
-
-            recipe_info = RecipeInfo(ingredients=ingredients)
-            return recipe_info
-    
-    
-    
+            return data
