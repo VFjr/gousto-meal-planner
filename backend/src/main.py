@@ -10,11 +10,26 @@ load_dotenv()
 
 app = FastAPI()
 
-@app.get("/recipes/{recipe_id}")
-async def read_recipe(recipe_id: int, session: Session = Depends(get_session)):
-    return get_recipe_by_id(session, recipe_id)
+# fetch recipes from gousto api
+# will take a while, will return a list of changed recipes.
+# modified
+# updated
 
-@app.post("/recipes/")
-async def update_recipe(recipes_data: List[dict], session: Session = Depends(get_session)):
-    update_recipes(session, recipes_data)
-    return {"message": "Recipes updated successfully"}
+# apply temporary changes to db
+# returns json with following fields/ 
+# modified
+# updated
+
+# get complete list of recipes
+# returns json with a full list of recipes, used to have browser side fuzzy search
+
+# get complete list of ingredients
+# returns json with a full list of ingredients, used to have browser side fuzzy search
+
+# get recipe by name
+
+# get recipe by url
+
+# get recipe by id
+
+# get recipe list by ingredient name
