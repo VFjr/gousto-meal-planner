@@ -8,6 +8,7 @@ class ImageLinkBase(SQLModel):
     url: str
 
 class ImageLink(ImageLinkBase, table=True):
+    __tablename__ = "image_link"
     id: int | None = Field(default=None, primary_key=True)
     ingredient: Optional["Ingredient"] = Relationship(back_populates="images")
     ingredient_id: Optional[int] = Field(default=None, foreign_key="ingredient.id")
@@ -23,6 +24,7 @@ class ImageLinkPublic(ImageLinkBase):
 
 ## RecipeIngredientLink Models
 class RecipeIngredientLink(SQLModel, table=True):
+    __tablename__ = "recipe_ingredient_link"
     recipe_id: int | None = Field(default=None, foreign_key="recipe.id", primary_key=True)
     ingredient_id: int | None = Field(default=None, foreign_key="ingredient.id", primary_key=True)
     amount: str
@@ -33,6 +35,7 @@ class IngredientBase(SQLModel):
     name: str
 
 class Ingredient(IngredientBase, table=True):
+    __tablename__ = "ingredient"
     id: int | None = Field(default=None, primary_key=True)
     images: List[ImageLink] = Relationship(back_populates="ingredient")
     recipes: List[RecipeIngredientLink] = Relationship(back_populates="ingredients", link_model=RecipeIngredientLink)
@@ -46,6 +49,8 @@ class InstructionStepBase(SQLModel):
     recipe_id: int = Field(default=None, foreign_key="recipe.id")
     
 class InstructionStep(InstructionStepBase, table=True):
+    __tablename__ = "instruction_step"
+
     id: int | None = Field(default=None, primary_key=True)
     recipe: "Recipe" = Relationship(back_populates="instruction_steps")
     images: List["ImageLink"] = Relationship(back_populates="instruction_step")
@@ -62,6 +67,7 @@ class BaseRecipe(SQLModel):
     prep_time: Optional[int] = Field(default=None)  # in minutes, using the for_two field
    
 class Recipe(BaseRecipe, table=True):
+    __tablename__ = "recipe"
     id: int | None = Field(default=None, primary_key=True)
 
     basic_ingredients: List[str] = Field(
