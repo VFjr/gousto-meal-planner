@@ -129,12 +129,10 @@ class RecipePublic(BaseRecipe):
     images: List[ImageURLPublic] = []
     ingredients: List[RecipeIngredientLinkPublic] = []
 
+class RecipeSummary(SQLModel):
+    slug: str
+    title: str
 
 class RecipeChangeList(BaseModel):
     modified: List[str]  # list of recipe names
     updated: List[str]
-
-
-class RecipeSlug(BaseModel):
-    # slug from the url of recipe. Used in Gousto's API to get recipe info
-    slug: str

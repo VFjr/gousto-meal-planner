@@ -6,7 +6,6 @@ from collections import defaultdict
 
 # ===== Recipe Parsing =====
 
-
 def parse_recipe(recipe_data: dict) -> Recipe:
     """
     Parses the recipe info from the gousto api into a Recipe object

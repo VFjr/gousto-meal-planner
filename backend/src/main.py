@@ -9,6 +9,7 @@ from .models import (
     ImageURL,
     InstructionStep,
     RecipeIngredientLink,
+    RecipeSummary,
 )
 from .gousto_fetcher import get_recipe_from_slug
 from .database import get_session
@@ -21,21 +22,9 @@ load_dotenv()
 
 app = FastAPI()
 
-# fetch recipe slugs from gousto api
-# @app.get("/recipes/slugs", response_model=List[RecipeSlug])
-# async def fetch_recipe_slugs(page: int, session: Session = Depends(get_session)):
-#     """
-#     Fetch recipe slugs from Gousto API.
-#     """
-#     from .gousto_fetcher import get_recipe_slugs_from_page
-#     try:
-#         recipe_slugs = await get_recipe_slugs_from_page(page)
-#         return recipe_slugs
-#     except Exception as e:
-#         return {"error": str(e)}
 
 
-@app.post("/add_recipe/{slug}", response_model=RecipePublic)
+@app.post("/recipes/add/{slug}", response_model=RecipePublic)
 async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_session)):
     """
     Add a recipe to the database using its Gousto slug.
@@ -152,6 +141,42 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Could not add recipe: {e}") from e
 
+@app.get("/recipes/list", response_model=List[RecipeSummary])
+async def list_recipes(session: AsyncSession = Depends(get_session)):
+    """
+    Get a list of all recipe slugs and names.
+    """
+    statement = select(Recipe.slug, Recipe.title)
+    result = await session.exec(statement)
+    recipes = result.all()
+    return recipes
+
+
+
+@app.delete("/recipes/delete/{slug}")
+async def delete_recipe_by_slug(
+    slug: str, session: AsyncSession = Depends(get_session)
+):
+    """
+    Delete a recipe by its slug.
+    """
+    # Find the recipe by slug
+    statement = select(Recipe).where(Recipe.slug == slug)
+    result = await session.exec(statement)
+    recipe = result.one_or_none()
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=404, detail=f"Recipe with slug '{slug}' not found."
+        )
+
+    # If found, delete it
+    await session.delete(recipe)
+    await session.commit()
+
+    return {"ok": True, "message": f"Recipe '{slug}' has been deleted."}
+
+
 
 @app.get("/recipes/{slug}", response_model=RecipePublic)
 async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_session)):
@@ -183,29 +208,6 @@ async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_sess
     return recipe
 
 
-@app.delete("/recipes/{slug}")
-async def delete_recipe_by_slug(
-    slug: str, session: AsyncSession = Depends(get_session)
-):
-    """
-    Delete a recipe by its slug.
-    """
-    # Find the recipe by slug
-    statement = select(Recipe).where(Recipe.slug == slug)
-    result = await session.exec(statement)
-    recipe = result.one_or_none()
-
-    if recipe is None:
-        raise HTTPException(
-            status_code=404, detail=f"Recipe with slug '{slug}' not found."
-        )
-
-    # If found, delete it
-    await session.delete(recipe)
-    await session.commit()
-
-    return {"ok": True, "message": f"Recipe '{slug}' has been deleted."}
-
 
 # fetch recipes from gousto api
 # will take a while, will return a list of changed recipes.
@@ -230,3 +232,4 @@ async def delete_recipe_by_slug(
 # get recipe by id
 
 # get recipe list by ingredient name
+
