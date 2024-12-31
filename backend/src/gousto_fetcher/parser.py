@@ -115,10 +115,10 @@ def parse_ingredient_data(ingredient_data: dict) -> Optional[Ingredient]:
     Returns None if the ingredient should be ignored (e.g quantity is 0)
     """
 
-    name = ingredient_data["name"]
+    name = ingredient_data["name"].lower()
 
     # get the amount. Janky but it works so far
-    amount = ingredient_data["label"].replace(name, "").strip()
+    amount = ingredient_data["label"].lower().replace(name, "").strip()
 
     if amount == "0":
         return None
@@ -145,7 +145,6 @@ def parse_image_urls(image_urls_data: List[dict]) -> List[ImageURL]:
 
 
 # --- Instruction Step Parsing ---
-
 
 def parse_all_instruction_steps(instruction_steps_data: dict) -> List[InstructionStep]:
     """

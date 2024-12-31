@@ -78,10 +78,10 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
                     )
                     session.add(image_obj)
 
-                # Needed for link objects
-                ingredient_obj_amount_list.append(
-                    (ingredient_obj, ingredient_data.amount)
-                )
+            # Needed for link objects
+            ingredient_obj_amount_list.append(
+                (ingredient_obj, ingredient_data.amount)
+            )
 
         # Instruction Steps
         instruction_step_obj_list = []
@@ -131,15 +131,26 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
         await session.commit()
         await session.refresh(recipe_obj)
 
-        return recipe_obj
+        # Re-query the newly created recipe with eager loading:
+        stmt = (
+            select(Recipe)
+            .options(
+                selectinload(Recipe.instruction_steps).options(selectinload(InstructionStep.images)),
+                selectinload(Recipe.ingredients).options(
+                    selectinload(RecipeIngredientLink.ingredient)
+                    .options(selectinload(Ingredient.images))
+                ),
+                selectinload(Recipe.images)
+            )
+            .where(Recipe.id == recipe_obj.id)
+        )
+        result = await session.exec(stmt)
+        fresh_recipe_obj = result.one()
+        # This instance now has the relationships loaded in the same session/greenlet
+        return fresh_recipe_obj
 
     except Exception as e:
-        # Catch the error and raise an HTTPException
-        # so FastAPI won't try to validate a partial/different response
-        import traceback
-
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=f"Could not add recipe: {e}")
+        raise HTTPException(status_code=400, detail=f"Could not add recipe: {e}") from e
 
 
 @app.get("/recipes/{slug}", response_model=RecipePublic)
@@ -179,7 +190,7 @@ async def delete_recipe_by_slug(
     """
     Delete a recipe by its slug.
     """
-    # 1) Find the recipe by slug
+    # Find the recipe by slug
     statement = select(Recipe).where(Recipe.slug == slug)
     result = await session.exec(statement)
     recipe = result.one_or_none()
@@ -189,11 +200,10 @@ async def delete_recipe_by_slug(
             status_code=404, detail=f"Recipe with slug '{slug}' not found."
         )
 
-    # 2) If found, delete it
+    # If found, delete it
     await session.delete(recipe)
     await session.commit()
 
-    # 3) Return a success message
     return {"ok": True, "message": f"Recipe '{slug}' has been deleted."}
 
 
