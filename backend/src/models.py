@@ -70,6 +70,9 @@ class IngredientPublic(IngredientBase):
     id: int
     images: List[ImageURLPublic] = []
 
+class IngredientSummary(IngredientBase):
+    id: int
+
 
 ## Instruction Step Models
 class InstructionStepBase(SQLModel):

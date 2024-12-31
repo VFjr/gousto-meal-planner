@@ -10,12 +10,11 @@ from .models import (
     InstructionStep,
     RecipeIngredientLink,
     RecipeSummary,
+    IngredientSummary,
 )
 from .gousto_fetcher import get_recipe_from_slug
 from .database import get_session
 from typing import List, Tuple
-import logging
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -206,6 +205,16 @@ async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_sess
         )
 
     return recipe
+
+@app.get("/ingredients/list", response_model=List[IngredientSummary])
+async def list_ingredients(session: AsyncSession = Depends(get_session)):
+    """
+    Get a list of all ingredient names and ids.
+    """
+    statement = select(Ingredient.name, Ingredient.id)
+    result = await session.exec(statement)
+    ingredients = result.all()
+    return ingredients
 
 
 
