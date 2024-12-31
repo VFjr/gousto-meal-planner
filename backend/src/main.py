@@ -177,7 +177,7 @@ async def delete_recipe_by_slug(
 
 
 
-@app.get("/recipes/{slug}", response_model=RecipePublic)
+@app.get("/recipes/slug/{slug}", response_model=RecipePublic)
 async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_session)):
     """
     Get a recipe by its slug.
@@ -206,6 +206,35 @@ async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_sess
 
     return recipe
 
+@app.get("/recipes/id/{recipe_id}", response_model=RecipePublic)
+async def get_recipe_by_id(recipe_id: int, session: AsyncSession = Depends(get_session)):
+    """
+    Get a recipe by its ID.
+    """
+    statement = (
+        select(Recipe)
+        .where(Recipe.id == recipe_id)
+        .options(
+            # Eager-load instruction steps + their images
+            selectinload(Recipe.instruction_steps).selectinload(InstructionStep.images),
+            # Eager-load recipe images
+            selectinload(Recipe.images),
+            # Eager-load ingredient links and their associated ingredient objects & images
+            selectinload(Recipe.ingredients)
+            .selectinload(RecipeIngredientLink.ingredient)
+            .selectinload(Ingredient.images),
+        )
+    )
+    result = await session.exec(statement)
+    recipe = result.one_or_none()
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=404, detail=f"Recipe with ID '{recipe_id}' not found"
+        )
+
+    return recipe
+
 @app.get("/ingredients/list", response_model=List[IngredientSummary])
 async def list_ingredients(session: AsyncSession = Depends(get_session)):
     """
@@ -228,17 +257,6 @@ async def list_ingredients(session: AsyncSession = Depends(get_session)):
 # modified
 # updated
 
-# get complete list of recipes
-# returns json with a full list of recipes, used to have browser side fuzzy search
-
-# get complete list of ingredients
-# returns json with a full list of ingredients, used to have browser side fuzzy search
-
-# get recipe by name
-
-# get recipe by url
-
-# get recipe by id
 
 # get recipe list by ingredient name
 
