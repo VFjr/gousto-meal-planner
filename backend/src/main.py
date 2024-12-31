@@ -79,9 +79,7 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
                     session.add(image_obj)
 
             # Needed for link objects
-            ingredient_obj_amount_list.append(
-                (ingredient_obj, ingredient_data.amount)
-            )
+            ingredient_obj_amount_list.append((ingredient_obj, ingredient_data.amount))
 
         # Instruction Steps
         instruction_step_obj_list = []
@@ -135,12 +133,15 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
         stmt = (
             select(Recipe)
             .options(
-                selectinload(Recipe.instruction_steps).options(selectinload(InstructionStep.images)),
-                selectinload(Recipe.ingredients).options(
-                    selectinload(RecipeIngredientLink.ingredient)
-                    .options(selectinload(Ingredient.images))
+                selectinload(Recipe.instruction_steps).options(
+                    selectinload(InstructionStep.images)
                 ),
-                selectinload(Recipe.images)
+                selectinload(Recipe.ingredients).options(
+                    selectinload(RecipeIngredientLink.ingredient).options(
+                        selectinload(Ingredient.images)
+                    )
+                ),
+                selectinload(Recipe.images),
             )
             .where(Recipe.id == recipe_obj.id)
         )
