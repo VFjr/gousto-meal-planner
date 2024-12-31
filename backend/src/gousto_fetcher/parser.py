@@ -7,7 +7,7 @@ from collections import defaultdict
 # ===== Recipe Parsing =====
 
 
-def parse_recipe_data(recipe_data: dict) -> Recipe:
+def parse_recipe(recipe_data: dict) -> Recipe:
     """
     Parses the recipe info from the gousto api into a Recipe object
 
@@ -19,7 +19,7 @@ def parse_recipe_data(recipe_data: dict) -> Recipe:
 
     ingredient_list = parse_all_ingredients(recipe_data["ingredients"])
     instruction_steps = parse_all_instruction_steps(recipe_data["cooking_instructions"])
-    image_urls = parse_image_urls_data[recipe_data["media"]["images"]]
+    image_urls = parse_image_urls(recipe_data["media"]["images"])
 
     title = recipe_data["title"]
     gousto_uid = recipe_data["gousto_uid"]
@@ -123,7 +123,7 @@ def parse_ingredient_data(ingredient_data: dict) -> Optional[Ingredient]:
     if amount == "0":
         return None
 
-    image_urls = parse_image_urls_data(ingredient_data["media"]["images"])
+    image_urls = parse_image_urls(ingredient_data["media"]["images"])
 
     return Ingredient(name=name, amount=amount, image_urls=image_urls)
 
@@ -131,7 +131,7 @@ def parse_ingredient_data(ingredient_data: dict) -> Optional[Ingredient]:
 # --- ImageURL Parsing ---
 
 
-def parse_image_urls_data(image_urls_data: List[dict]) -> List[ImageURL]:
+def parse_image_urls(image_urls_data: List[dict]) -> List[ImageURL]:
     """
     Parses the image url data from the gousto api into a list of ImageURL objects
 
@@ -142,3 +142,27 @@ def parse_image_urls_data(image_urls_data: List[dict]) -> List[ImageURL]:
         ImageURL(url=image_data["image"], width=image_data["width"])
         for image_data in image_urls_data
     ]
+
+
+# --- Instruction Step Parsing ---
+
+
+def parse_all_instruction_steps(instruction_steps_data: dict) -> List[InstructionStep]:
+    """
+    Parses all the instruction steps from the gousto api into a list of InstructionStep objects
+    """
+
+    instruction_steps = []
+
+    for instruction_step_data in instruction_steps_data:
+        description = instruction_step_data["instruction"]
+        step_number = instruction_step_data["order"]
+        image_urls = parse_image_urls(instruction_step_data["media"]["images"])
+
+        instruction_steps.append(
+            InstructionStep(
+                step_number=step_number, description=description, image_urls=image_urls
+            )
+        )
+
+    return instruction_steps
