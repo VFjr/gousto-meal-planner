@@ -1,10 +1,15 @@
-from .constants import GET_RECIPES_ENDPOINT,GET_RECIPE_INFO_ENDPOINT, GET_RECIPES_PAGE_LIMIT
+from .constants import (
+    GET_RECIPES_ENDPOINT,
+    GET_RECIPE_INFO_ENDPOINT,
+    GET_RECIPES_PAGE_LIMIT,
+)
 from .errors import NoMoreRecipesError
 from .utils import page_to_offset, strip_recipes_prefix
 import aiohttp
 import asyncio
 import json
 import logging
+
 
 async def get_recipe_slugs_from_page(page: int) -> list[str]:
     """
@@ -17,7 +22,7 @@ async def get_recipe_slugs_from_page(page: int) -> list[str]:
     logging.debug(f"Scraping page {page}")
 
     offset = page_to_offset(page)
-    
+
     api_url = f"{GET_RECIPES_ENDPOINT}&limit={GET_RECIPES_PAGE_LIMIT}&offset={offset}"
 
     async with aiohttp.ClientSession() as session:
@@ -27,27 +32,27 @@ async def get_recipe_slugs_from_page(page: int) -> list[str]:
                     request_info=response.request_info,
                     history=response.history,
                     status=response.status,
-                    message=f"HTTP error occurred: {response.status}"
+                    message=f"HTTP error occurred: {response.status}",
                 )
-            
+
             data = await response.json()
             entries = data["data"]["entries"]
-            recipe_slug_list : list[str] = []
+            recipe_slug_list: list[str] = []
 
             # check if there are any more recipes to scrape
             if len(entries) == 0:
                 raise NoMoreRecipesError
 
             for entry in entries:
-
                 slug = strip_recipes_prefix(entry["url"])
                 recipe_slug_list.append(slug)
-            
+
             return recipe_slug_list
+
 
 async def get_all_recipe_slugs(max_concurrent_requests=5) -> list[str]:
     page = 0
-    all_recipe_slugs : list[str] = []
+    all_recipe_slugs: list[str] = []
 
     while True:
         try:
@@ -80,7 +85,8 @@ async def get_all_recipe_slugs(max_concurrent_requests=5) -> list[str]:
             break
 
     return all_recipe_slugs
-        
+
+
 async def get_recipe_info_from_slug(slug: str) -> dict:
     """
     Takes a recipe slug and returns its recipe info decoded json directly from the Gousto API response
@@ -101,8 +107,8 @@ async def get_recipe_info_from_slug(slug: str) -> dict:
                     request_info=response.request_info,
                     history=response.history,
                     status=response.status,
-                    message=f"HTTP error occurred: {response.status}"
+                    message=f"HTTP error occurred: {response.status}",
                 )
-            
+
             data = await response.json()
             return data["data"]["entry"]

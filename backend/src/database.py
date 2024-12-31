@@ -14,6 +14,7 @@ DATABASE_URL = (
 # Create an async engine
 engine = create_async_engine(DATABASE_URL, echo=True)
 
+
 # Provide an async session
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSession(engine) as session:
