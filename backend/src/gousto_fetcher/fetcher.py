@@ -92,10 +92,7 @@ async def get_recipe_info_from_slug(slug: str) -> dict:
     Raises:
         aiohttp.ClientResponseError: If the response status code is not 200.
     """
-    slug = strip_recipes_prefix(slug)
-    logging.debug(f"stripped slug: {slug}")
-
-    api_url = f"{GET_RECIPE_INFO_ENDPOINT}/recipes/{slug}"
+    api_url = f"{GET_RECIPE_INFO_ENDPOINT}{slug}"
 
     async with aiohttp.ClientSession() as session:
         async with session.get(api_url) as response:
@@ -108,4 +105,4 @@ async def get_recipe_info_from_slug(slug: str) -> dict:
                 )
             
             data = await response.json()
-            return data
+            return data["data"]["entry"]
