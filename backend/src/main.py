@@ -147,7 +147,6 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
         )
         result = await session.exec(stmt)
         fresh_recipe_obj = result.one()
-        # This instance now has the relationships loaded in the same session/greenlet
         return fresh_recipe_obj
 
     except Exception as e:

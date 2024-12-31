@@ -120,8 +120,20 @@ def parse_ingredient_data(ingredient_data: dict) -> Optional[Ingredient]:
     # get the amount. Janky but it works so far
     amount = ingredient_data["label"].lower().replace(name, "").strip()
 
+    # Sometimes amount is wrapped in round brackets...
+    if amount.startswith("(") and amount.endswith(")"):
+        amount = amount[1:-1]
+
+    # Sometimes Gousto API includes ingredients with 0 quantity
     if amount == "0":
         return None
+    
+    if amount.endswith("x0"):
+        return None
+
+    # Sometimes amount is an empty string when it means a single unit
+    if amount == "":
+        amount = "1"
 
     image_urls = parse_image_urls(ingredient_data["media"]["images"])
 
