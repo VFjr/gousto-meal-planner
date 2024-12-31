@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.orm import selectinload
 from .models import (
     Recipe,
     RecipePublic,
@@ -44,9 +45,11 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
         statement = select(Recipe).where(Recipe.slug == slug)
         result = await session.exec(statement)
         existing_recipe = result.one_or_none()
-        
+
         if existing_recipe:
-            raise HTTPException(status_code=409, detail="Recipe with this slug already exists")
+            raise HTTPException(
+                status_code=409, detail="Recipe with this slug already exists"
+            )
 
         recipe_data = await get_recipe_from_slug(slug)
 
@@ -137,6 +140,61 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
 
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=f"Could not add recipe: {e}")
+
+
+@app.get("/recipes/{slug}", response_model=RecipePublic)
+async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_session)):
+    """
+    Get a recipe by its slug.
+    """
+    statement = (
+        select(Recipe)
+        .where(Recipe.slug == slug)
+        .options(
+            # Eager-load instruction steps + their images
+            selectinload(Recipe.instruction_steps).selectinload(InstructionStep.images),
+            # Eager-load recipe images
+            selectinload(Recipe.images),
+            # Eager-load ingredient links and their associated ingredient objects & images
+            selectinload(Recipe.ingredients)
+            .selectinload(RecipeIngredientLink.ingredient)
+            .selectinload(Ingredient.images),
+        )
+    )
+    result = await session.exec(statement)
+    recipe = result.one_or_none()
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=404, detail=f"Recipe with slug '{slug}' not found"
+        )
+
+    return recipe
+
+
+@app.delete("/recipes/{slug}")
+async def delete_recipe_by_slug(
+    slug: str, session: AsyncSession = Depends(get_session)
+):
+    """
+    Delete a recipe by its slug.
+    """
+    # 1) Find the recipe by slug
+    statement = select(Recipe).where(Recipe.slug == slug)
+    result = await session.exec(statement)
+    recipe = result.one_or_none()
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=404, detail=f"Recipe with slug '{slug}' not found."
+        )
+
+    # 2) If found, delete it
+    await session.delete(recipe)
+    await session.commit()
+
+    # 3) Return a success message
+    return {"ok": True, "message": f"Recipe '{slug}' has been deleted."}
 
 
 # fetch recipes from gousto api

@@ -29,18 +29,27 @@ class ImageURLPublic(ImageURLBase):
 
 
 ## RecipeIngredientLink Models
-class RecipeIngredientLink(SQLModel, table=True):
+
+
+class RecipeIngredientLinkBase(SQLModel):
+    amount: str
+
+
+class RecipeIngredientLink(RecipeIngredientLinkBase, table=True):
     __tablename__ = "recipe_ingredient_link"
     recipe_id: int | None = Field(
-        default=None, foreign_key="recipe.id", primary_key=True
+        default=None, foreign_key="recipe.id", primary_key=True, ondelete="CASCADE"
     )
     ingredient_id: int | None = Field(
         default=None, foreign_key="ingredient.id", primary_key=True
     )
-    amount: str
 
-    recipe: "Recipe" = Relationship(back_populates="ingredient_links")
+    recipe: "Recipe" = Relationship(back_populates="ingredients")
     ingredient: "Ingredient" = Relationship(back_populates="recipe_links")
+
+
+class RecipeIngredientLinkPublic(RecipeIngredientLinkBase):
+    ingredient: "IngredientPublic"
 
 
 ## Ingredient Models
@@ -51,19 +60,22 @@ class IngredientBase(SQLModel):
 class Ingredient(IngredientBase, table=True):
     __tablename__ = "ingredient"
     id: int | None = Field(default=None, primary_key=True)
-    images: List[ImageURL] = Relationship(back_populates="ingredient")
+    images: List[ImageURL] = Relationship(
+        back_populates="ingredient", cascade_delete=True
+    )
     recipe_links: List[RecipeIngredientLink] = Relationship(back_populates="ingredient")
 
 
 class IngredientPublic(IngredientBase):
     id: int
+    images: List[ImageURLPublic] = []
 
 
 ## Instruction Step Models
 class InstructionStepBase(SQLModel):
     text: str
     order: int
-    recipe_id: int = Field(default=None, foreign_key="recipe.id")
+    recipe_id: int = Field(default=None, foreign_key="recipe.id", ondelete="CASCADE")
 
 
 class InstructionStep(InstructionStepBase, table=True):
@@ -71,11 +83,14 @@ class InstructionStep(InstructionStepBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     recipe: "Recipe" = Relationship(back_populates="instruction_steps")
-    images: List["ImageURL"] = Relationship(back_populates="instruction_step")
+    images: List["ImageURL"] = Relationship(
+        back_populates="instruction_step", cascade_delete=True
+    )
 
 
 class InstructionStepPublic(InstructionStepBase):
     id: int
+    images: List[ImageURLPublic] = []
 
 
 ## Recipe Models
@@ -98,17 +113,21 @@ class Recipe(BaseRecipe, table=True):
         sa_column=Column(JSON),  # or sa_column=Column(JSONB) if you prefer
     )
 
-    ingredient_links: List[RecipeIngredientLink] = Relationship(back_populates="recipe")
-    instruction_steps: List[InstructionStep] = Relationship(back_populates="recipe")
-    images: List[ImageURL] = Relationship(back_populates="recipe")
+    ingredients: List[RecipeIngredientLink] = Relationship(
+        back_populates="recipe", cascade_delete=True
+    )
+    instruction_steps: List[InstructionStep] = Relationship(
+        back_populates="recipe", cascade_delete=True
+    )
+    images: List[ImageURL] = Relationship(back_populates="recipe", cascade_delete=True)
 
 
 class RecipePublic(BaseRecipe):
     id: int
     basic_ingredients: List[str] = []
-
-
-# Decide what to do regarding theses
+    instruction_steps: List[InstructionStepPublic] = []
+    images: List[ImageURLPublic] = []
+    ingredients: List[RecipeIngredientLinkPublic] = []
 
 
 class RecipeChangeList(BaseModel):
