@@ -107,7 +107,7 @@ def handle_duplicate_ingredients(ingredient_list: List[Ingredient]) -> List[Ingr
     if len(unit_amounts) == 1 and len(number_amounts) == 1:
         # Keep the one with the unit
         for ingredient in ingredient_list:
-            if any(unit in ingredient.amount for unit in ["g", "ml"]):
+            if any(unit in ingredient.amount for unit in ["g", "ml", "tsp", "tbsp"]):
                 return [ingredient]
 
     # Sometimes it requires multiple ingredients of the same type with different amounts, ie 8ml and 15ml soy sauce
@@ -132,8 +132,8 @@ def parse_ingredient_data(ingredient_data: dict) -> Optional[Ingredient]:
     Returns None if the ingredient should be ignored (e.g quantity is 0)
     """
 
-    # Sometimes name is missing, usually because it's a duplicate
-    if "name" not in ingredient_data:
+    # Sometimes name or label is missing, usually because it's a duplicate
+    if "name" not in ingredient_data or "label" not in ingredient_data:
         return None
 
     name = ingredient_data["name"].lower()

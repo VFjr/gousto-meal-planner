@@ -20,16 +20,25 @@ async def add_recipe(slug):
         return response.json()
 
 async def main():
+    print("Fetching list of recipes to add...")
     new_recipes_data = await fetch_new_recipes()
     new_recipe_slugs = new_recipes_data.get("new_recipe_slugs", [])
     total_recipes = len(new_recipe_slugs)
 
-    for i, slug in enumerate(new_recipe_slugs, 1):
-        try:
-            added_recipe = await add_recipe(slug)
-            print(f"[{i}/{total_recipes}] Successfully added recipe: {added_recipe['title']}")
-        except httpx.HTTPStatusError as e:
-            print(f"[{i}/{total_recipes}] Failed to add recipe with slug '{slug}': {e.response.text}")
+    print(f"Found {total_recipes} new recipes to add")
+
+    semaphore = asyncio.Semaphore(20) 
+    
+    async def add_recipe_with_semaphore(slug, index):
+        async with semaphore:
+            try:
+                added_recipe = await add_recipe(slug)
+                print(f"[{index}/{total_recipes}] Successfully added recipe: {added_recipe['title']}")
+            except httpx.HTTPStatusError as e:
+                print(f"[{index}/{total_recipes}] Failed to add recipe with slug '{slug}': {e.response.text}")
+
+    tasks = [add_recipe_with_semaphore(slug, i) for i, slug in enumerate(new_recipe_slugs, 1)]
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
     asyncio.run(main())
