@@ -70,6 +70,7 @@ class IngredientPublic(IngredientBase):
     id: int
     images: List[ImageURLPublic] = []
 
+
 class IngredientSummary(IngredientBase):
     id: int
 
@@ -132,10 +133,18 @@ class RecipePublic(BaseRecipe):
     images: List[ImageURLPublic] = []
     ingredients: List[RecipeIngredientLinkPublic] = []
 
+
+class BadRecipeSlug(SQLModel, table=True):
+    # recipe slugs that were returned by the gousto api but failed to return a recipe
+    __tablename__ = "bad_recipe_slug"
+    id: int | None = Field(default=None, primary_key=True)
+    slug: str = Field(index=True)
+
+
 class RecipeSummary(SQLModel):
     slug: str
     title: str
 
-class RecipeChangeList(BaseModel):
-    modified: List[str]  # list of recipe names
-    updated: List[str]
+class RecipeCheckResult(SQLModel):
+    new_recipe_slugs: List[str]
+    previously_bad_recipe_slugs: List[str]

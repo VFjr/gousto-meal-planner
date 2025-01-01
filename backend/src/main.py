@@ -11,8 +11,10 @@ from .models import (
     RecipeIngredientLink,
     RecipeSummary,
     IngredientSummary,
+    BadRecipeSlug,
+    RecipeCheckResult,
 )
-from .gousto_fetcher import get_recipe_from_slug
+from .gousto_fetcher import get_recipe_from_slug, get_all_recipe_slugs
 from .database import get_session
 from typing import List, Tuple
 from dotenv import load_dotenv
@@ -20,7 +22,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
-
 
 
 @app.post("/recipes/add/{slug}", response_model=RecipePublic)
@@ -140,6 +141,7 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Could not add recipe: {e}") from e
 
+
 @app.get("/recipes/list", response_model=List[RecipeSummary])
 async def list_recipes(session: AsyncSession = Depends(get_session)):
     """
@@ -149,7 +151,6 @@ async def list_recipes(session: AsyncSession = Depends(get_session)):
     result = await session.exec(statement)
     recipes = result.all()
     return recipes
-
 
 
 @app.delete("/recipes/delete/{slug}")
@@ -174,7 +175,6 @@ async def delete_recipe_by_slug(
     await session.commit()
 
     return {"ok": True, "message": f"Recipe '{slug}' has been deleted."}
-
 
 
 @app.get("/recipes/slug/{slug}", response_model=RecipePublic)
@@ -206,8 +206,11 @@ async def get_recipe_by_slug(slug: str, session: AsyncSession = Depends(get_sess
 
     return recipe
 
+
 @app.get("/recipes/id/{recipe_id}", response_model=RecipePublic)
-async def get_recipe_by_id(recipe_id: int, session: AsyncSession = Depends(get_session)):
+async def get_recipe_by_id(
+    recipe_id: int, session: AsyncSession = Depends(get_session)
+):
     """
     Get a recipe by its ID.
     """
@@ -235,6 +238,7 @@ async def get_recipe_by_id(recipe_id: int, session: AsyncSession = Depends(get_s
 
     return recipe
 
+
 @app.get("/ingredients/list", response_model=List[IngredientSummary])
 async def list_ingredients(session: AsyncSession = Depends(get_session)):
     """
@@ -245,6 +249,66 @@ async def list_ingredients(session: AsyncSession = Depends(get_session)):
     ingredients = result.all()
     return ingredients
 
+
+@app.get("/recipes/by-ingredient/{ingredient_id}", response_model=List[RecipeSummary])
+async def get_recipes_by_ingredient_id(
+    ingredient_id: int, session: AsyncSession = Depends(get_session)
+):
+    """
+    Get all recipes that include a specific ingredient by its ID.
+    """
+    # Query to find all recipe links with the given ingredient ID
+    statement = (
+        select(Recipe)
+        .join(RecipeIngredientLink)
+        .where(RecipeIngredientLink.ingredient_id == ingredient_id)
+    )
+    result = await session.exec(statement)
+    recipes = result.all()
+
+    if not recipes:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No recipes found with ingredient ID '{ingredient_id}'",
+        )
+
+    return recipes
+
+
+@app.get("/recipes/check-new", response_model=RecipeCheckResult)
+async def check_new_recipes(session: AsyncSession = Depends(get_session)):
+    """
+    Fetch all recipes from Gousto, compare with existing ones, and return lists of new and previously bad recipe slugs
+    """
+    try:
+        # Fetch all recipe stubs from Gousto
+        gousto_recipes = await get_all_recipe_slugs(max_concurrent_requests=50)
+
+        # Fetch all existing recipes from the database
+        statement = select(Recipe.slug)
+        result = await session.exec(statement)
+        existing_recipes = result.all()
+
+        # Fetch all bad recipe slugs from the database
+        bad_slug_statement = select(BadRecipeSlug.slug)
+        bad_slug_result = await session.exec(bad_slug_statement)
+        bad_recipe_slugs = bad_slug_result.all()
+
+        gousto_set = set(gousto_recipes)
+        existing_set = set(existing_recipes)
+        bad_slugs_set = set(bad_recipe_slugs)
+
+        potentially_new_recipes = gousto_set - existing_set
+        new_recipe_slugs = potentially_new_recipes - bad_slugs_set
+        previously_bad_recipe_slugs = potentially_new_recipes & bad_slugs_set
+
+        return RecipeCheckResult(
+            new_recipe_slugs=list(new_recipe_slugs),
+            previously_bad_recipe_slugs=list(previously_bad_recipe_slugs),
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error syncing recipes: {e}") from e
 
 
 # fetch recipes from gousto api
@@ -259,4 +323,3 @@ async def list_ingredients(session: AsyncSession = Depends(get_session)):
 
 
 # get recipe list by ingredient name
-
