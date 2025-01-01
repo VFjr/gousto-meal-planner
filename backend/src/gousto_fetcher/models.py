@@ -2,7 +2,7 @@
 # Not reusing the sqlmodels for these due to extra complications with the link models
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -30,7 +30,7 @@ class Recipe:
     title: str
     gousto_uid: str
     images: List[ImageURL]
-    rating: float
+    rating: Optional[float]
     prep_time: int
     ingredients: List[Ingredient]
     instruction_steps: List[InstructionStep]

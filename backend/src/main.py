@@ -40,7 +40,26 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
                 status_code=409, detail="Recipe with this slug already exists"
             )
 
-        recipe_data = await get_recipe_from_slug(slug)
+        # Check if slug is in BadRecipeSlug
+        bad_slug_statement = select(BadRecipeSlug).where(BadRecipeSlug.slug == slug)
+        bad_slug_result = await session.exec(bad_slug_statement)
+        bad_slug = bad_slug_result.one_or_none()
+
+        # Attempt to fetch recipe data
+        try:
+            recipe_data = await get_recipe_from_slug(slug)
+        except Exception as fetch_error:
+            if not bad_slug:
+                # Add to BadRecipeSlug if not already present
+                bad_recipe_slug = BadRecipeSlug(slug=slug)
+                session.add(bad_recipe_slug)
+                await session.commit()
+            raise HTTPException(status_code=400, detail=f"Could not fetch recipe: {fetch_error}")
+
+        # If fetching succeeded and slug was in BadRecipeSlug, remove it
+        if bad_slug:
+            await session.delete(bad_slug)
+            await session.commit()
 
         # Ingredients
         ingredient_obj_amount_list: List[Tuple[Ingredient, str]] = []
