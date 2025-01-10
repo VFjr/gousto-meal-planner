@@ -1,6 +1,7 @@
-from sqlmodel import SQLModel, Field, Relationship, Column, JSON
-from pydantic import BaseModel
 from typing import List, Optional
+
+from pydantic import BaseModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 
 # Image Link
@@ -145,6 +146,30 @@ class RecipeSummary(SQLModel):
     slug: str
     title: str
 
+
 class RecipeCheckResult(SQLModel):
     new_recipe_slugs: List[str]
     previously_bad_recipe_slugs: List[str]
+
+
+## Auth Models
+
+
+class Token(SQLModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(SQLModel):
+    username: str | None = None
+
+
+class User(SQLModel):
+    username: str
+    email: str | None = None
+
+
+class UserInDB(User, table=True):
+    __tablename__ = "user"
+    id: int | None = Field(default=None, primary_key=True)
+    hashed_password: str

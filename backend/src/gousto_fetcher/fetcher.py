@@ -1,16 +1,15 @@
-from .constants import (
-    GET_RECIPES_ENDPOINT,
-    GET_RECIPE_INFO_ENDPOINT,
-    GET_RECIPES_PAGE_LIMIT,
-)
-from .errors import NoMoreRecipesError
-from .utils import page_to_offset, strip_recipes_prefix
-from .models import Recipe
-from .parser import parse_recipe
-import aiohttp
 import asyncio
 import json
 import logging
+
+import aiohttp
+
+from .constants import (GET_RECIPE_INFO_ENDPOINT, GET_RECIPES_ENDPOINT,
+                        GET_RECIPES_PAGE_LIMIT)
+from .errors import NoMoreRecipesError
+from .models import Recipe
+from .parser import parse_recipe
+from .utils import page_to_offset, strip_recipes_prefix
 
 
 async def get_recipe_slugs_from_page(page: int) -> list[str]:

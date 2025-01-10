@@ -1,5 +1,6 @@
-from .constants import GET_RECIPES_PAGE_LIMIT
 import re
+
+from .constants import GET_RECIPES_PAGE_LIMIT
 
 
 def page_to_offset(page: int) -> int:

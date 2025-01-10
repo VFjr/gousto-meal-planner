@@ -1,6 +1,8 @@
-import pytest
-import src.gousto_fetcher as fetcher
 import asyncio
+
+import pytest
+
+import src.gousto_fetcher as fetcher
 
 # Note that these tests use Gousto API endpoints, so they will fail if their API is down
 

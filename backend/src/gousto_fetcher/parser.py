@@ -1,8 +1,9 @@
 # functions that parse the data from the gousto api, and handle all its nuances
 
-from .models import Recipe, ImageURL, Ingredient, InstructionStep
-from typing import Optional, List
 from collections import defaultdict
+from typing import List, Optional
+
+from .models import ImageURL, Ingredient, InstructionStep, Recipe
 
 # ===== Recipe Parsing =====
 
@@ -91,17 +92,20 @@ def handle_duplicate_ingredients(ingredient_list: List[Ingredient]) -> List[Ingr
     # if there's only one ingredient, return it
     if len(ingredient_list) == 1:
         return ingredient_list
-    
+
     # If all amounts are the same, return just one ingredient
     if len(set(ingredient.amount for ingredient in ingredient_list)) == 1:
         return [ingredient_list[0]]
-
 
     # Check if one has a unit (g/ml) and one is just a number
     amounts = [ingredient.amount for ingredient in ingredient_list]
 
     # Find amounts with units vs plain numbers
-    unit_amounts = [amt for amt in amounts if any(unit in amt for unit in ["g", "ml", "tsp", "tbsp"])]
+    unit_amounts = [
+        amt
+        for amt in amounts
+        if any(unit in amt for unit in ["g", "ml", "tsp", "tbsp"])
+    ]
     number_amounts = [amt for amt in amounts if amt.strip("1234567890") == ""]
 
     if len(unit_amounts) == 1 and len(number_amounts) == 1:
@@ -115,14 +119,18 @@ def handle_duplicate_ingredients(ingredient_list: List[Ingredient]) -> List[Ingr
         # there are only unit amounts, i think we can assume they are ok, and can combine them as a string
         combined_amount = " + ".join(unit_amounts)
         # Return a copy of the first ingredient with the combined amount
-        return [Ingredient(
-            name=ingredient_list[0].name,
-            amount=combined_amount,
-            image_urls=ingredient_list[0].image_urls
-        )]
+        return [
+            Ingredient(
+                name=ingredient_list[0].name,
+                amount=combined_amount,
+                image_urls=ingredient_list[0].image_urls,
+            )
+        ]
 
     # If we get here, we don't know how to handle these duplicates
-    raise ValueError(f"Unable to handle duplicate ingredients with amounts: {amounts} for ingredient {ingredient_list[0].name}")
+    raise ValueError(
+        f"Unable to handle duplicate ingredients with amounts: {amounts} for ingredient {ingredient_list[0].name}"
+    )
 
 
 def parse_ingredient_data(ingredient_data: dict) -> Optional[Ingredient]:

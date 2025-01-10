@@ -1,31 +1,57 @@
-from fastapi import FastAPI, Depends, HTTPException
+from typing import Annotated, List, Optional, Tuple
+from datetime import timedelta
+
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.orm import selectinload
-from .models import (
-    Recipe,
-    RecipePublic,
-    Ingredient,
-    ImageURL,
-    InstructionStep,
-    RecipeIngredientLink,
-    RecipeSummary,
-    IngredientSummary,
-    BadRecipeSlug,
-    RecipeCheckResult,
-)
-from .gousto_fetcher import get_recipe_from_slug, get_all_recipe_slugs
+
 from .database import get_session
-from typing import List, Tuple
-from dotenv import load_dotenv
+from .gousto_fetcher import get_all_recipe_slugs, get_recipe_from_slug
+from .models import (BadRecipeSlug, ImageURL, Ingredient, IngredientSummary,
+                     InstructionStep, Recipe, RecipeCheckResult,
+                     RecipeIngredientLink, RecipePublic, RecipeSummary, User, Token)
+from .auth import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_user
 
 load_dotenv()
 
+
+
 app = FastAPI()
+
+# Auth
+
+
+@app.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: AsyncSession = Depends(get_session),
+) -> Token:
+    user = await authenticate_user(form_data.username, form_data.password, session)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(
+        data={"sub": user.username}
+    )
+    return Token(access_token=access_token, token_type="bearer")
+
+
+
+# Recipes
 
 
 @app.post("/recipes/add/{slug}", response_model=RecipePublic)
-async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_session)):
+async def add_recipe_to_db(
+    slug: str,
+    session: AsyncSession = Depends(get_session),
+    _current_user: User = Depends(get_current_user)
+):
     """
     Add a recipe to the database using its Gousto slug.
     """
@@ -54,7 +80,9 @@ async def add_recipe_to_db(slug: str, session: AsyncSession = Depends(get_sessio
                 bad_recipe_slug = BadRecipeSlug(slug=slug)
                 session.add(bad_recipe_slug)
                 await session.commit()
-            raise HTTPException(status_code=400, detail=f"Could not fetch recipe: {fetch_error}")
+            raise HTTPException(
+                status_code=400, detail=f"Could not fetch recipe: {fetch_error}"
+            )
 
         # If fetching succeeded and slug was in BadRecipeSlug, remove it
         if bad_slug:
@@ -174,7 +202,7 @@ async def list_recipes(session: AsyncSession = Depends(get_session)):
 
 @app.delete("/recipes/delete/{slug}")
 async def delete_recipe_by_slug(
-    slug: str, session: AsyncSession = Depends(get_session)
+    slug: str, session: AsyncSession = Depends(get_session), _current_user: User = Depends(get_current_user)
 ):
     """
     Delete a recipe by its slug.
@@ -295,7 +323,10 @@ async def get_recipes_by_ingredient_id(
 
 
 @app.get("/recipes/check-new", response_model=RecipeCheckResult)
-async def check_new_recipes(session: AsyncSession = Depends(get_session)):
+async def check_new_recipes(
+    session: AsyncSession = Depends(get_session),
+    _current_user: User = Depends(get_current_user)
+):
     """
     Fetch all recipes from Gousto, compare with existing ones, and return lists of new and previously bad recipe slugs
     """
@@ -327,18 +358,6 @@ async def check_new_recipes(session: AsyncSession = Depends(get_session)):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error syncing recipes: {e}") from e
-
-
-# fetch recipes from gousto api
-# will take a while, will return a list of changed recipes.
-# modified
-# updated
-
-# apply temporary changes to db
-# returns json with following fields/
-# modified
-# updated
-
-
-# get recipe list by ingredient name
+        raise HTTPException(
+            status_code=500, detail=f"Error syncing recipes: {e}"
+        ) from e

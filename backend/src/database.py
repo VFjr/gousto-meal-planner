@@ -1,9 +1,9 @@
-from sqlmodel import SQLModel
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
+import os
 from typing import AsyncGenerator
 
-import os
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 # Use the "postgresql+asyncpg" scheme only if you truly need async:
 DATABASE_URL = (
