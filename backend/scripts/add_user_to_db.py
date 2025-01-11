@@ -1,14 +1,14 @@
 # run with uv run -m scripts.add_user_to_db username password email
 
-import os
-import asyncio
 import argparse
-from sqlmodel import SQLModel, create_engine, Session
-from src.models import UserInDB
+import asyncio
+import os
+
 from passlib.context import CryptContext
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
+from src.models import UserInDB
 
 # Load environment variables
 POSTGRES_USER = os.getenv("POSTGRES_USER")
@@ -23,16 +23,16 @@ async_engine = create_async_engine(DATABASE_URL, echo=True)
 
 # Create a session factory bound to the async engine
 AsyncSessionLocal = sessionmaker(
-    bind=async_engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+    bind=async_engine, class_=AsyncSession, expire_on_commit=False
 )
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def get_password_hash(password):
     return pwd_context.hash(password)
+
 
 async def add_user(username: str, password: str, email: str):
     # Create a new user instance
@@ -46,6 +46,7 @@ async def add_user(username: str, password: str, email: str):
         await session.commit()
         await session.refresh(new_user)
         print(f"User {new_user.username} added with ID {new_user.id}")
+
 
 if __name__ == "__main__":
     # Parse command-line arguments

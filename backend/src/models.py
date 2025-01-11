@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 

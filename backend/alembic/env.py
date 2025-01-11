@@ -2,13 +2,13 @@ import os
 from logging.config import fileConfig
 
 from dotenv import load_dotenv
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel
 
 from alembic import context
+
 # Import your models here
-from src.models import Ingredient, Recipe
 
 load_dotenv()
 
