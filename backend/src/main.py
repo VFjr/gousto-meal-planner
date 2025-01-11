@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional, Tuple
 from datetime import timedelta
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -12,7 +12,7 @@ from .database import get_session
 from .gousto_fetcher import get_all_recipe_slugs, get_recipe_from_slug
 from .models import (BadRecipeSlug, ImageURL, Ingredient, IngredientSummary,
                      InstructionStep, Recipe, RecipeCheckResult,
-                     RecipeIngredientLink, RecipePublic, RecipeSummary, User, Token)
+                     RecipeIngredientLink, RecipePublic, RecipeSummary, User, Token, UserInDB)
 from .auth import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_user
 
 load_dotenv()
@@ -46,11 +46,11 @@ async def login_for_access_token(
 # Recipes
 
 
-@app.post("/recipes/add/{slug}", response_model=RecipePublic)
+@app.post("/recipes/add/{slug}", response_model=RecipePublic, responses={401: {"description": "Unauthorized"}})
 async def add_recipe_to_db(
     slug: str,
     session: AsyncSession = Depends(get_session),
-    _current_user: User = Depends(get_current_user)
+    _current_user: UserInDB = Security(get_current_user, scopes=["user"])
 ):
     """
     Add a recipe to the database using its Gousto slug.
@@ -200,9 +200,11 @@ async def list_recipes(session: AsyncSession = Depends(get_session)):
     return recipes
 
 
-@app.delete("/recipes/delete/{slug}")
+@app.delete("/recipes/delete/{slug}", responses={401: {"description": "Unauthorized"}})
 async def delete_recipe_by_slug(
-    slug: str, session: AsyncSession = Depends(get_session), _current_user: User = Depends(get_current_user)
+    slug: str, 
+    session: AsyncSession = Depends(get_session), 
+    _current_user: UserInDB = Security(get_current_user, scopes=["user"])
 ):
     """
     Delete a recipe by its slug.
@@ -322,10 +324,10 @@ async def get_recipes_by_ingredient_id(
     return recipes
 
 
-@app.get("/recipes/check-new", response_model=RecipeCheckResult)
+@app.get("/recipes/check-new", response_model=RecipeCheckResult, responses={401: {"description": "Unauthorized"}})
 async def check_new_recipes(
     session: AsyncSession = Depends(get_session),
-    _current_user: User = Depends(get_current_user)
+    _current_user: UserInDB = Security(get_current_user, scopes=["user"])
 ):
     """
     Fetch all recipes from Gousto, compare with existing ones, and return lists of new and previously bad recipe slugs

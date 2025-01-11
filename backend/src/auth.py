@@ -11,7 +11,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from .database import get_session
-from .models import User
+from .models import User, UserInDB
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -75,7 +75,7 @@ async def get_current_user(
 async def authenticate_user(
     username: str, password: str, session: AsyncSession = Depends(get_session)
 ):
-    statement = select(User).where(User.username == username)
+    statement = select(UserInDB).where(UserInDB.username == username)
     result = await session.exec(statement)
     user = result.one_or_none()
 
