@@ -14,25 +14,20 @@ export default function App() {
 
   return (
     <div className="container">
+      <h1 className="title">Gousto Recipe Finder</h1>
       <div className="toggle-container">
         <button
           className={`toggle-button ${searchType === 'url' ? 'active' : ''}`}
           onClick={() => setSearchType('url')}
-        >
-          URL
-        </button>
+        >URL</button>
         <button
           className={`toggle-button ${searchType === 'name' ? 'active' : ''}`}
           onClick={() => setSearchType('name')}
-        >
-          Name
-        </button>
+        >Name</button>
         <button
           className={`toggle-button ${searchType === 'ingredient' ? 'active' : ''}`}
           onClick={() => setSearchType('ingredient')}
-        >
-          Ingredient
-        </button>
+        >Ingredient</button>
       </div>
 
       <div className="search-container">
@@ -47,6 +42,10 @@ export default function App() {
           Search
         </button>
       </div>
+      <div className="divider">OR</div>
+      <button onClick={() => console.log('Surprise!')} className="surprise-button">
+        🎲 Surprise Me!
+      </button>
     </div>
   );
 }
