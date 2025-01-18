@@ -3,6 +3,7 @@ import './App.css';
 import { Recipe, SearchType } from './types';
 import { getRecipeBySlug } from './services/api';
 import { RecipeCard } from './components/RecipeCard';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
 export default function App() {
   const [searchType, setSearchType] = useState<SearchType>('url');
@@ -82,7 +83,7 @@ export default function App() {
       </div>
 
       <div className="recipes-section">
-        {loading && <div>Loading...</div>}
+        {loading && <LoadingSpinner />}
         {error && <div className="error-message">{error}</div>}
         {recipe && <RecipeCard recipe={recipe} />}
       </div>
