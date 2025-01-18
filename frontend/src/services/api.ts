@@ -43,4 +43,45 @@ export async function getRecipesList(): Promise<RecipeListItem[]> {
     }
 
     return response.json();
+}
+
+export interface Ingredient {
+    name: string;
+    id: number;
+}
+
+export async function getIngredientsList(): Promise<Ingredient[]> {
+    const baseUrl = BACKEND_URL.replace(/\/+$/, '');
+
+    const response = await fetch(`${baseUrl}/ingredients/list`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch ingredients: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export async function getRecipesByIngredient(ingredientId: number): Promise<RecipeListItem[]> {
+    const baseUrl = BACKEND_URL.replace(/\/+$/, '');
+
+    const response = await fetch(`${baseUrl}/recipes/by-ingredient/${ingredientId}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch recipes: ${response.statusText}`);
+    }
+
+    return response.json();
 } 

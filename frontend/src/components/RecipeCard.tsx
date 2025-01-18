@@ -46,7 +46,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                 <h2 className="recipe-title">{recipe.title}</h2>
                 <div className="recipe-meta">
                     <span>⏱️ {recipe.prep_time} mins</span>
-                    <span>⭐ {recipe.rating.toFixed(1)}</span>
+                    <span>⭐ {recipe.rating?.toFixed(1) ?? 'N/A'}</span>
                 </div>
 
                 {isExpanded && (

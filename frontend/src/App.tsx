@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import './components/Search.css';
 import { Recipe, SearchType } from './types';
-import { getRecipeBySlug, getRecipesList, RecipeListItem } from './services/api';
+import { getRecipeBySlug, getRecipesList, RecipeListItem, getIngredientsList, getRecipesByIngredient, Ingredient } from './services/api';
 import { RecipeCard } from './components/RecipeCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { SearchDropdown } from './components/SearchDropdown';
@@ -14,6 +14,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [recipeList, setRecipeList] = useState<RecipeListItem[]>([]);
+  const [ingredientsList, setIngredientsList] = useState<Ingredient[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -28,9 +30,22 @@ export default function App() {
     loadRecipes();
   }, []);
 
+  useEffect(() => {
+    const loadIngredients = async () => {
+      try {
+        const ingredients = await getIngredientsList();
+        setIngredientsList(ingredients);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load ingredients');
+      }
+    };
+
+    loadIngredients();
+  }, []);
+
   const handleRecipeSelect = async (selectedRecipe: RecipeListItem) => {
-    setSearchQuery(selectedRecipe.title);
     await handleSearch(selectedRecipe.slug);
+    setSearchQuery('');
   };
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +65,7 @@ export default function App() {
   const handleSearch = async (slug?: string) => {
     setError(null);
     setRecipe(null);
+    setRecipes([]);
     setLoading(true);
 
     try {
@@ -60,6 +76,7 @@ export default function App() {
         }
         const recipeData = await getRecipeBySlug(extractedSlug);
         setRecipe(recipeData);
+        setSearchQuery('');
       } else if (searchType === 'name' && slug) {
         const recipeData = await getRecipeBySlug(slug);
         setRecipe(recipeData);
@@ -83,6 +100,26 @@ export default function App() {
       const randomRecipe = recipeList[randomIndex];
       const recipeData = await getRecipeBySlug(randomRecipe.slug);
       setRecipe(recipeData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleIngredientSelect = async (ingredient: Ingredient) => {
+    setSearchQuery(ingredient.name);
+    setError(null);
+    setRecipe(null);
+    setRecipes([]);
+    setLoading(true);
+
+    try {
+      const recipesList = await getRecipesByIngredient(ingredient.id);
+      const recipesData = await Promise.all(
+        recipesList.map(item => getRecipeBySlug(item.slug))
+      );
+      setRecipes(recipesData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -124,8 +161,18 @@ export default function App() {
             <SearchDropdown
               items={recipeList}
               searchQuery={searchQuery}
-              onSelect={handleRecipeSelect}
+              onSelect={(item) => handleRecipeSelect(item as RecipeListItem)}
               onClose={() => setSearchQuery('')}
+              type="recipe"
+            />
+          )}
+          {searchType === 'ingredient' && searchQuery && (
+            <SearchDropdown
+              items={ingredientsList}
+              searchQuery={searchQuery}
+              onSelect={(item) => handleIngredientSelect(item as Ingredient)}
+              onClose={() => setSearchQuery('')}
+              type="ingredient"
             />
           )}
         </div>
@@ -140,6 +187,9 @@ export default function App() {
         {loading && <LoadingSpinner />}
         {error && <div className="error-message">{error}</div>}
         {recipe && <RecipeCard recipe={recipe} isSingleRecipe={true} />}
+        {recipes.map(recipe => (
+          <RecipeCard key={recipe.id} recipe={recipe} />
+        ))}
       </div>
     </div>
   );

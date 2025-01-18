@@ -1,20 +1,21 @@
 import Fuse from 'fuse.js';
-import { RecipeListItem } from '../services/api';
+import { RecipeListItem, Ingredient } from '../services/api';
 import { useEffect, useRef } from 'react';
 import './SearchDropdown.css';
 
 interface SearchDropdownProps {
-    items: RecipeListItem[];
+    items: (RecipeListItem | Ingredient)[];
     searchQuery: string;
-    onSelect: (item: RecipeListItem) => void;
+    onSelect: (item: RecipeListItem | Ingredient) => void;
     onClose: () => void;
+    type: 'recipe' | 'ingredient';
 }
 
-export function SearchDropdown({ items, searchQuery, onSelect, onClose }: SearchDropdownProps) {
+export function SearchDropdown({ items, searchQuery, onSelect, onClose, type }: SearchDropdownProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const fuse = new Fuse(items, {
-        keys: ['title'],
+        keys: [type === 'recipe' ? 'title' : 'name'],
         threshold: 0.3,
     });
 
@@ -33,22 +34,17 @@ export function SearchDropdown({ items, searchQuery, onSelect, onClose }: Search
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [onClose]);
 
-    const handleSelect = (item: RecipeListItem) => {
-        onSelect(item);
-        onClose();
-    };
-
     if (results.length === 0) return null;
 
     return (
         <div className="search-dropdown" ref={dropdownRef}>
             {results.map(({ item }) => (
                 <div
-                    key={item.slug}
+                    key={type === 'recipe' ? (item as RecipeListItem).slug : (item as Ingredient).id}
                     className="search-dropdown-item"
-                    onClick={() => handleSelect(item)}
+                    onClick={() => onSelect(item)}
                 >
-                    {item.title}
+                    {type === 'recipe' ? (item as RecipeListItem).title : (item as Ingredient).name}
                 </div>
             ))}
         </div>
