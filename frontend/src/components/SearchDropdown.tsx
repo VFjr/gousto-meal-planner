@@ -1,6 +1,7 @@
 import Fuse from 'fuse.js';
 import { RecipeListItem } from '../services/api';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import './SearchDropdown.css';
 
 interface SearchDropdownProps {
     items: RecipeListItem[];

@@ -1,6 +1,7 @@
 import { Recipe } from '../types';
 import { getProxiedImageUrl } from '../utils/image';
 import { useEffect, useState } from 'react';
+import './RecipeCard.css';
 
 interface RecipeCardProps {
     recipe: Recipe;

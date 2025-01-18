@@ -1,0 +1,83 @@
+.recipe-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 1rem;
+    background: white;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.recipe-image {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+.recipe-content {
+    padding: 1rem;
+}
+
+.recipe-title {
+    margin: 0 0 0.5rem;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.recipe-meta {
+    display: flex;
+    gap: 1rem;
+    color: #666;
+}
+
+.recipe-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.action-button {
+    flex: 1;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.cookbook-button {
+    background: #d32f2f;
+    color: white;
+}
+
+.cookbook-button:hover {
+    background: #b71c1c;
+}
+
+.pdf-button {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.pdf-button:hover {
+    background: #e0e0e0;
+}
+
+.recipe-card.expanded {
+    cursor: default;
+}
+
+.recipe-card.single {
+    cursor: default;
+}
+
+.recipe-card.single:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

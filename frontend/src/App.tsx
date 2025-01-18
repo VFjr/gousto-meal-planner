@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import './components/Search.css';
 import { Recipe, SearchType } from './types';
 import { getRecipeBySlug, getRecipesList, RecipeListItem } from './services/api';
 import { RecipeCard } from './components/RecipeCard';
