@@ -33,13 +33,15 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
             className={`recipe-card ${isExpanded ? 'expanded' : ''} ${isSingleRecipe ? 'single' : ''}`}
             onClick={handleCardClick}
         >
-            {imageUrl && (
-                <img
-                    src={imageUrl}
-                    alt={recipe.title}
-                    className="recipe-image"
-                />
-            )}
+            <div className="recipe-image-container">
+                {imageUrl && (
+                    <img
+                        src={imageUrl}
+                        alt={recipe.title}
+                        className="recipe-image"
+                    />
+                )}
+            </div>
             <div className="recipe-content">
                 <h2 className="recipe-title">{recipe.title}</h2>
                 <div className="recipe-meta">
