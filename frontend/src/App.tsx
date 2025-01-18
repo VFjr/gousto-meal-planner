@@ -85,7 +85,7 @@ export default function App() {
       <div className="recipes-section">
         {loading && <LoadingSpinner />}
         {error && <div className="error-message">{error}</div>}
-        {recipe && <RecipeCard recipe={recipe} />}
+        {recipe && <RecipeCard recipe={recipe} isSingleRecipe={true} />}
       </div>
     </div>
   );

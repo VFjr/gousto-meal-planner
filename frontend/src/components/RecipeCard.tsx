@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 
 interface RecipeCardProps {
     recipe: Recipe;
+    isSingleRecipe?: boolean;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) {
     const [imageUrl, setImageUrl] = useState<string>('');
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(isSingleRecipe);
 
     useEffect(() => {
         getProxiedImageUrl(recipe.images)
@@ -20,10 +21,16 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         window.open(`https://www.gousto.co.uk/cookbook/recipes/${recipe.slug}`, '_blank');
     };
 
+    const handleCardClick = () => {
+        if (!isSingleRecipe) {
+            setIsExpanded(!isExpanded);
+        }
+    };
+
     return (
         <div
-            className={`recipe-card ${isExpanded ? 'expanded' : ''}`}
-            onClick={() => setIsExpanded(!isExpanded)}
+            className={`recipe-card ${isExpanded ? 'expanded' : ''} ${isSingleRecipe ? 'single' : ''}`}
+            onClick={handleCardClick}
         >
             {imageUrl && (
                 <img
