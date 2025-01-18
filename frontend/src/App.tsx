@@ -13,7 +13,6 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [recipeList, setRecipeList] = useState<RecipeListItem[]>([]);
-  const [isDropdownActive, setIsDropdownActive] = useState(true);
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -30,17 +29,11 @@ export default function App() {
 
   const handleRecipeSelect = async (selectedRecipe: RecipeListItem) => {
     setSearchQuery(selectedRecipe.title);
-    setIsDropdownActive(false);
     await handleSearch(selectedRecipe.slug);
   };
 
-  useEffect(() => {
-    setIsDropdownActive(true);
-  }, [searchType]);
-
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setIsDropdownActive(true);
   };
 
   const extractSlugFromUrl = (url: string): string | null => {
@@ -107,13 +100,12 @@ export default function App() {
           <button onClick={() => handleSearch()} className="search-button">
             Search
           </button>
-          {searchType === 'name' && (
+          {searchType === 'name' && searchQuery && (
             <SearchDropdown
               items={recipeList}
               searchQuery={searchQuery}
               onSelect={handleRecipeSelect}
-              isActive={isDropdownActive}
-              onClose={() => setIsDropdownActive(false)}
+              onClose={() => setSearchQuery('')}
             />
           )}
         </div>

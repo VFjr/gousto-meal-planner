@@ -6,11 +6,10 @@ interface SearchDropdownProps {
     items: RecipeListItem[];
     searchQuery: string;
     onSelect: (item: RecipeListItem) => void;
-    isActive: boolean;
     onClose: () => void;
 }
 
-export function SearchDropdown({ items, searchQuery, onSelect, isActive, onClose }: SearchDropdownProps) {
+export function SearchDropdown({ items, searchQuery, onSelect, onClose }: SearchDropdownProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const fuse = new Fuse(items, {
@@ -18,7 +17,7 @@ export function SearchDropdown({ items, searchQuery, onSelect, isActive, onClose
         threshold: 0.3,
     });
 
-    const results = searchQuery && isActive
+    const results = searchQuery
         ? fuse.search(searchQuery).slice(0, 5)
         : [];
 
