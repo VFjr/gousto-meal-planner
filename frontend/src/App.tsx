@@ -18,6 +18,7 @@ export default function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [visibleRecipes, setVisibleRecipes] = useState(6);
   const [recipeListItems, setRecipeListItems] = useState<RecipeListItem[]>([]);
+  const [selectedIngredient, setSelectedIngredient] = useState<string>('');
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -112,7 +113,8 @@ export default function App() {
   };
 
   const handleIngredientSelect = async (ingredient: Ingredient) => {
-    setSearchQuery(ingredient.name);
+    setSearchQuery('');
+    setSelectedIngredient(ingredient.name);
     setError(null);
     setRecipe(null);
     setRecipes([]);
@@ -129,7 +131,6 @@ export default function App() {
         recipesList.slice(0, 6).map(item => getRecipeBySlug(item.slug))
       );
       setRecipes(initialRecipes);
-      setSearchQuery('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -214,6 +215,11 @@ export default function App() {
         {loading && <LoadingSpinner />}
         {error && <div className="error-message">{error}</div>}
         {recipe && <RecipeCard recipe={recipe} isSingleRecipe={true} />}
+        {recipes.length > 0 && searchType === 'ingredient' && (
+          <div className="search-summary">
+            Found {recipeListItems.length} recipes with {selectedIngredient} 🍳
+          </div>
+        )}
         {recipes.slice(0, visibleRecipes).map(recipe => (
           <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
