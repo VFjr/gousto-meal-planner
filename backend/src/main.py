@@ -1,7 +1,9 @@
 from typing import Annotated, List, Tuple
+import os
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Security, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -19,6 +21,17 @@ load_dotenv()
 
 
 app = FastAPI()
+
+frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:5173")
+allowed_origins = [url.strip() for url in frontend_urls.split(",")]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Auth
 

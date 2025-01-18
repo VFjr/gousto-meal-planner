@@ -111,3 +111,41 @@
     height: 1px;
     background: #e0e0e0;
 }
+
+.recipe-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 1rem;
+    background: white;
+}
+
+.recipe-image {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+.recipe-content {
+    padding: 1rem;
+}
+
+.recipe-title {
+    margin: 0 0 0.5rem;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.recipe-meta {
+    display: flex;
+    gap: 1rem;
+    color: #666;
+}
+
+.error-message {
+    color: #d32f2f;
+    background: #ffebee;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
