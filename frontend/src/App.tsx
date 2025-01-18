@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { Recipe, SearchType } from './types';
-import { getRecipeBySlug } from './services/api';
+import { getRecipeBySlug, getRecipesList, RecipeListItem } from './services/api';
 import { RecipeCard } from './components/RecipeCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { SearchDropdown } from './components/SearchDropdown';
 
 export default function App() {
   const [searchType, setSearchType] = useState<SearchType>('url');
@@ -11,6 +12,36 @@ export default function App() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [recipeList, setRecipeList] = useState<RecipeListItem[]>([]);
+  const [isDropdownActive, setIsDropdownActive] = useState(true);
+
+  useEffect(() => {
+    const loadRecipes = async () => {
+      try {
+        const recipes = await getRecipesList();
+        setRecipeList(recipes);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load recipes');
+      }
+    };
+
+    loadRecipes();
+  }, []);
+
+  const handleRecipeSelect = async (selectedRecipe: RecipeListItem) => {
+    setSearchQuery(selectedRecipe.title);
+    setIsDropdownActive(false);
+    await handleSearch(selectedRecipe.slug);
+  };
+
+  useEffect(() => {
+    setIsDropdownActive(true);
+  }, [searchType]);
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setIsDropdownActive(true);
+  };
 
   const extractSlugFromUrl = (url: string): string | null => {
     try {
@@ -22,21 +53,23 @@ export default function App() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (slug?: string) => {
     setError(null);
     setRecipe(null);
     setLoading(true);
 
     try {
       if (searchType === 'url') {
-        const slug = extractSlugFromUrl(searchQuery);
-        if (!slug) {
+        const extractedSlug = extractSlugFromUrl(searchQuery);
+        if (!extractedSlug) {
           throw new Error('Invalid URL format');
         }
+        const recipeData = await getRecipeBySlug(extractedSlug);
+        setRecipe(recipeData);
+      } else if (searchType === 'name' && slug) {
         const recipeData = await getRecipeBySlug(slug);
         setRecipe(recipeData);
       }
-      // Future implementation for name and ingredient search
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -68,12 +101,21 @@ export default function App() {
             type="text"
             placeholder={`Search by ${searchType}...`}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchInputChange}
             className="search-input"
           />
-          <button onClick={handleSearch} className="search-button">
+          <button onClick={() => handleSearch()} className="search-button">
             Search
           </button>
+          {searchType === 'name' && (
+            <SearchDropdown
+              items={recipeList}
+              searchQuery={searchQuery}
+              onSelect={handleRecipeSelect}
+              isActive={isDropdownActive}
+              onClose={() => setIsDropdownActive(false)}
+            />
+          )}
         </div>
 
         <div className="divider">OR</div>

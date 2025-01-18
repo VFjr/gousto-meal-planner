@@ -20,4 +20,27 @@ export async function getRecipeBySlug(slug: string): Promise<Recipe> {
     }
 
     return response.json();
+}
+
+export interface RecipeListItem {
+    slug: string;
+    title: string;
+}
+
+export async function getRecipesList(): Promise<RecipeListItem[]> {
+    const baseUrl = BACKEND_URL.replace(/\/+$/, '');
+
+    const response = await fetch(`${baseUrl}/recipes/list`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch recipes: ${response.statusText}`);
+    }
+
+    return response.json();
 } 
