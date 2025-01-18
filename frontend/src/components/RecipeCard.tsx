@@ -18,6 +18,10 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
             .catch(() => setImageUrl(''));
     }, [recipe.images]);
 
+    useEffect(() => {
+        setIsExpanded(isSingleRecipe);
+    }, [isSingleRecipe]);
+
     const handleCookbookClick = () => {
         window.open(`https://www.gousto.co.uk/cookbook/recipes/${recipe.slug}`, '_blank');
     };

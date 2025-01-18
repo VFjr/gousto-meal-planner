@@ -36,3 +36,20 @@
     border-radius: 8px;
     margin-top: 1rem;
 }
+
+.load-more-button {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.load-more-button:hover {
+    background: #e0e0e0;
+}

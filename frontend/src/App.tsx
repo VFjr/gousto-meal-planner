@@ -16,6 +16,8 @@ export default function App() {
   const [recipeList, setRecipeList] = useState<RecipeListItem[]>([]);
   const [ingredientsList, setIngredientsList] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [visibleRecipes, setVisibleRecipes] = useState(6);
+  const [recipeListItems, setRecipeListItems] = useState<RecipeListItem[]>([]);
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -93,7 +95,9 @@ export default function App() {
 
     setError(null);
     setRecipe(null);
+    setRecipes([]);
     setLoading(true);
+    setVisibleRecipes(6);
 
     try {
       const randomIndex = Math.floor(Math.random() * recipeList.length);
@@ -112,14 +116,37 @@ export default function App() {
     setError(null);
     setRecipe(null);
     setRecipes([]);
+    setRecipeListItems([]);
     setLoading(true);
+    setVisibleRecipes(6);
 
     try {
       const recipesList = await getRecipesByIngredient(ingredient.id);
-      const recipesData = await Promise.all(
-        recipesList.map(item => getRecipeBySlug(item.slug))
+      setRecipeListItems(recipesList);
+
+      // Only fetch details for first batch of visible recipes
+      const initialRecipes = await Promise.all(
+        recipesList.slice(0, 6).map(item => getRecipeBySlug(item.slug))
       );
-      setRecipes(recipesData);
+      setRecipes(initialRecipes);
+      setSearchQuery('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    const nextBatch = recipeListItems.slice(visibleRecipes, visibleRecipes + 6);
+    setLoading(true);
+
+    try {
+      const newRecipes = await Promise.all(
+        nextBatch.map(item => getRecipeBySlug(item.slug))
+      );
+      setRecipes(prev => [...prev, ...newRecipes]);
+      setVisibleRecipes(prev => prev + 6);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -187,9 +214,17 @@ export default function App() {
         {loading && <LoadingSpinner />}
         {error && <div className="error-message">{error}</div>}
         {recipe && <RecipeCard recipe={recipe} isSingleRecipe={true} />}
-        {recipes.map(recipe => (
+        {recipes.slice(0, visibleRecipes).map(recipe => (
           <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
+        {recipes.length > 0 && recipeListItems.length > visibleRecipes && (
+          <button
+            className="load-more-button"
+            onClick={handleLoadMore}
+          >
+            Load More
+          </button>
+        )}
       </div>
     </div>
   );
