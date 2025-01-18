@@ -8,15 +8,23 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
     const [imageUrl, setImageUrl] = useState<string>('');
+    const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {
         getProxiedImageUrl(recipe.images)
             .then(url => setImageUrl(url))
-            .catch(() => setImageUrl('')); // Handle error case
+            .catch(() => setImageUrl(''));
     }, [recipe.images]);
 
+    const handleCookbookClick = () => {
+        window.open(`https://www.gousto.co.uk/cookbook/recipes/${recipe.slug}`, '_blank');
+    };
+
     return (
-        <div className="recipe-card">
+        <div
+            className={`recipe-card ${isExpanded ? 'expanded' : ''}`}
+            onClick={() => setIsExpanded(!isExpanded)}
+        >
             {imageUrl && (
                 <img
                     src={imageUrl}
@@ -30,6 +38,20 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                     <span>⏱️ {recipe.prep_time} mins</span>
                     <span>⭐ {recipe.rating.toFixed(1)}</span>
                 </div>
+
+                {isExpanded && (
+                    <div className="recipe-actions" onClick={e => e.stopPropagation()}>
+                        <button
+                            className="action-button cookbook-button"
+                            onClick={handleCookbookClick}
+                        >
+                            📖 View in Cookbook
+                        </button>
+                        <button className="action-button pdf-button">
+                            📄 Generate PDF
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
