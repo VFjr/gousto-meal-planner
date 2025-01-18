@@ -71,6 +71,25 @@ export default function App() {
     }
   };
 
+  const handleSurpriseMe = async () => {
+    if (recipeList.length === 0) return;
+
+    setError(null);
+    setRecipe(null);
+    setLoading(true);
+
+    try {
+      const randomIndex = Math.floor(Math.random() * recipeList.length);
+      const randomRecipe = recipeList[randomIndex];
+      const recipeData = await getRecipeBySlug(randomRecipe.slug);
+      setRecipe(recipeData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container">
       <h1 className="title">Gousto Recipe Finder</h1>
@@ -112,7 +131,7 @@ export default function App() {
         </div>
 
         <div className="divider">OR</div>
-        <button onClick={() => console.log('Surprise!')} className="surprise-button">
+        <button onClick={() => handleSurpriseMe()} className="surprise-button">
           🎲 Surprise Me!
         </button>
       </div>
