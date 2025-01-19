@@ -13,6 +13,7 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) {
     const [imageUrl, setImageUrl] = useState<string>('');
     const [isExpanded, setIsExpanded] = useState(isSingleRecipe);
+    const [isPdfGenerating, setIsPdfGenerating] = useState(false);
 
     useEffect(() => {
         getProxiedImageUrl(recipe.images)
@@ -63,17 +64,26 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                         >
                             📖 View in Cookbook
                         </button>
-                        <PDFDownloadLink
-                            document={<RecipePDF recipe={recipe} />}
-                            fileName={`${recipe.title}.pdf`}
-                        >
-                            {({ blob, url, loading, error }) =>
-                                loading ? 'Loading document...' : 'Download now!'
-                            }
-                            {/* <button className="action-button pdf-button">
+                        {!isPdfGenerating ? (
+                            <button
+                                className="action-button pdf-button"
+                                onClick={() => setIsPdfGenerating(true)}
+                            >
                                 📄 Generate PDF
-                            </button> */}
-                        </PDFDownloadLink>
+                            </button>
+                        ) : (
+                            <PDFDownloadLink
+                                document={<RecipePDF recipe={recipe} />}
+                                fileName={`${recipe.title}.pdf`}
+                                className="action-button pdf-button"
+                                style={{ textDecoration: 'none', textAlign: 'center' }}
+                            >
+                                {/* @ts-expect-error - known issue with PDFDownloadLink, needed until https://github.com/diegomura/react-pdf/issues/3012 gets fixed */}
+                                {({ blob, url, loading, error }) =>
+                                    `📄 ${loading ? 'Loading document...' : 'Download PDF'}`
+                                }
+                            </PDFDownloadLink>
+                        )}
                     </div>
                 )}
             </div>
