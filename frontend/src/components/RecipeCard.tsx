@@ -15,6 +15,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
     const [isExpanded, setIsExpanded] = useState(isSingleRecipe);
     const [pdfImages, setPdfImages] = useState<ImageData | null>(null);
     const [pdfRequested, setPdfRequested] = useState<boolean>(false);
+    const [isPdfBlobReady, setIsPdfBlobReady] = useState(false);
 
     // Get Main Recipe image for recipe card
     useEffect(() => {
@@ -26,6 +27,13 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
     useEffect(() => {
         setIsExpanded(isSingleRecipe);
     }, [isSingleRecipe]);
+
+    useEffect(() => {
+        if (pdfImages) {
+            // Reset blob ready state when PDF images change
+            setIsPdfBlobReady(false);
+        }
+    }, [pdfImages]);
 
     const handleCookbookClick = () => {
         window.open(`https://www.gousto.co.uk/cookbook/recipes/${recipe.slug}`, '_blank');
@@ -140,6 +148,10 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
         }
     };
 
+    const handlePdfBlobReady = () => {
+        setIsPdfBlobReady(true);
+    };
+
     return (
         <div
             className={`recipe-card ${isExpanded ? 'expanded' : ''} ${isSingleRecipe ? 'single' : ''}`}
@@ -163,36 +175,39 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
 
                 {isExpanded && (
                     <div className="recipe-actions" onClick={e => e.stopPropagation()}>
-                        <button
-                            className="action-button cookbook-button"
-                            onClick={handleCookbookClick}
-                        >
-                            📖 View in Cookbook
-                        </button>
+                        <div className="button-wrapper">
+                            <button
+                                className="action-button cookbook-button"
+                                onClick={handleCookbookClick}
+                            >
+                                📖 View in Cookbook
+                            </button>
+                        </div>
 
-                        {pdfImages ? (
-                            <div className="pdf-wrapper">
+                        <div className="button-wrapper">
+                            {pdfImages ? (
                                 <PDFDownloadLink
-                                    document={<RecipePDF recipe={recipe} images={pdfImages} />}
+                                    document={<RecipePDF recipe={recipe} images={pdfImages} onBlobReady={handlePdfBlobReady} />}
                                     fileName={`${recipe.title}.pdf`}
-                                    style={{ textDecoration: 'none' }}
+                                    style={{ textDecoration: 'none', width: '100%' }}
                                 >
+                                    {/* @ts-expect-error - PDFDownloadLink types are incomplete */}
                                     {({ loading }) => (
-                                        <button className="action-button" disabled={loading}>
-                                            📄 {loading ? "Preparing PDF..." : "Download PDF"}
+                                        <button className="action-button" disabled={loading || !isPdfBlobReady}>
+                                            📄 {loading || !isPdfBlobReady ? "Preparing PDF..." : "Download PDF"}
                                         </button>
                                     )}
                                 </PDFDownloadLink>
-                            </div>
-                        ) : (
-                            <button
-                                className="action-button"
-                                onClick={!pdfRequested ? loadPdfImages : undefined}
-                                disabled={pdfRequested}
-                            >
-                                📄 {pdfRequested ? "Preparing PDF..." : "Generate PDF"}
-                            </button>
-                        )}
+                            ) : (
+                                <button
+                                    className="action-button"
+                                    onClick={!pdfRequested ? loadPdfImages : undefined}
+                                    disabled={pdfRequested}
+                                >
+                                    📄 {pdfRequested ? "Preparing PDF..." : "Generate PDF"}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

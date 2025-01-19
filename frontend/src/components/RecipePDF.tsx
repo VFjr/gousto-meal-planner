@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Recipe } from '../types';
+import { useEffect } from 'react';
 
 interface ImageData {
     main: string | null;
@@ -9,6 +10,7 @@ interface ImageData {
 interface RecipePDFProps {
     recipe: Recipe;
     images: ImageData | null;
+    onBlobReady?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -53,7 +55,12 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images }) => {
+const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) => {
+    useEffect(() => {
+        // Notify parent when component is mounted (blob is being prepared)
+        onBlobReady?.();
+    }, [onBlobReady]);
+
     if (!images) return null;
 
     console.log('PDF Images:', images.ingredients);  // Add this line to debug
