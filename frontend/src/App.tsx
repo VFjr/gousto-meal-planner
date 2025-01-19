@@ -13,7 +13,6 @@ export default function App() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [recipeList, setRecipeList] = useState<RecipeListItem[]>([]);
   const [ingredientsList, setIngredientsList] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [visibleRecipes, setVisibleRecipes] = useState(6);
@@ -24,7 +23,7 @@ export default function App() {
     const loadRecipes = async () => {
       try {
         const recipes = await getRecipesList();
-        setRecipeList(recipes);
+        setRecipeListItems(recipes);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load recipes');
       }
@@ -92,7 +91,7 @@ export default function App() {
   };
 
   const handleSurpriseMe = async () => {
-    if (recipeList.length === 0) return;
+    if (recipeListItems.length === 0) return;
 
     setError(null);
     setRecipe(null);
@@ -101,8 +100,8 @@ export default function App() {
     setVisibleRecipes(6);
 
     try {
-      const randomIndex = Math.floor(Math.random() * recipeList.length);
-      const randomRecipe = recipeList[randomIndex];
+      const randomIndex = Math.floor(Math.random() * recipeListItems.length);
+      const randomRecipe = recipeListItems[randomIndex];
       const recipeData = await getRecipeBySlug(randomRecipe.slug);
       setRecipe(recipeData);
     } catch (err) {
@@ -187,7 +186,7 @@ export default function App() {
           </button>
           {searchType === 'name' && searchQuery && (
             <SearchDropdown
-              items={recipeList}
+              items={recipeListItems}
               searchQuery={searchQuery}
               onSelect={(item) => handleRecipeSelect(item as RecipeListItem)}
               onClose={() => setSearchQuery('')}
