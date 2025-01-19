@@ -2,7 +2,7 @@ import { Recipe } from '../types';
 import { getProxiedImageUrl } from '../utils/image';
 import { useEffect, useState, useRef } from 'react';
 import { PDFDownloadLink, Document, Page } from '@react-pdf/renderer';
-import RecipePDF from './RecipePDF';
+import { RecipePDF, ImageData, RecipePDFProps } from './RecipePDF';
 import './RecipeCard.css';
 
 interface RecipeCardProps {
@@ -10,34 +10,22 @@ interface RecipeCardProps {
     isSingleRecipe?: boolean;
 }
 
-interface ImageData {
-    main: string | null;
-    ingredients: { [key: number]: string };
-    instructions: { [key: number]: string };
-}
-
 export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) {
-    const [imageUrl, setImageUrl] = useState<string>('');
+    const [mainImageUrl, setMainImageUrl] = useState<string>('');
     const [isExpanded, setIsExpanded] = useState(isSingleRecipe);
-    const [isPdfLoading, setIsPdfLoading] = useState(false);
     const [pdfImages, setPdfImages] = useState<ImageData | null>(null);
-    const [pdfDocument, setPdfDocument] = useState<React.ReactNode | null>(null);
+    const [pdfRequested, setPdfRequested] = useState<boolean>(false);
 
+    // Get Main Recipe image for recipe card
     useEffect(() => {
         getProxiedImageUrl(recipe.images)
-            .then(url => setImageUrl(url))
-            .catch(() => setImageUrl(''));
+            .then(url => setMainImageUrl(url))
+            .catch(() => setMainImageUrl(''));
     }, [recipe.images]);
 
     useEffect(() => {
         setIsExpanded(isSingleRecipe);
     }, [isSingleRecipe]);
-
-    useEffect(() => {
-        if (pdfImages) {
-            setPdfDocument(<RecipePDF recipe={recipe} images={pdfImages} />);
-        }
-    }, [pdfImages, recipe]);
 
     const handleCookbookClick = () => {
         window.open(`https://www.gousto.co.uk/cookbook/recipes/${recipe.slug}`, '_blank');
@@ -51,11 +39,14 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
 
     const loadPdfImages = async () => {
         if (pdfImages) {
+            console.log('PDF images already loaded');
             return;
         }
 
         console.log('Loading PDF images...');
-        setIsPdfLoading(true);
+
+        setPdfRequested(true);
+
         try {
             const blobToBase64 = (blob: Blob): Promise<string> => {
                 return new Promise((resolve) => {
@@ -69,7 +60,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
             let mainImageData: string | null = null;
             try {
                 if (recipe.images?.length) {
-                    const mainImageUrl = await getProxiedImageUrl(recipe.images);
+                    const mainImageUrl = await getProxiedImageUrl(recipe.images, 200);
                     const mainResponse = await fetch(mainImageUrl);
                     if (mainResponse.ok) {
                         const mainBlob = await mainResponse.blob();
@@ -86,7 +77,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                 const ingredientPromises = recipe.ingredients.map(async (recipeIngredient) => {
                     try {
                         if (recipeIngredient.ingredient.images?.length) {
-                            const imageUrl = await getProxiedImageUrl(recipeIngredient.ingredient.images);
+                            const imageUrl = await getProxiedImageUrl(recipeIngredient.ingredient.images, 200);
                             const response = await fetch(imageUrl);
                             if (response.ok) {
                                 const blob = await response.blob();
@@ -115,7 +106,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                 const instructionPromises = recipe.instruction_steps.map(async (step) => {
                     try {
                         if (step.images?.length) {
-                            const imageUrl = await getProxiedImageUrl(step.images);
+                            const imageUrl = await getProxiedImageUrl(step.images, 200);
                             const response = await fetch(imageUrl);
                             if (response.ok) {
                                 const blob = await response.blob();
@@ -145,8 +136,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
             });
         } catch (error) {
             console.error('Error loading PDF images:', error);
-            setPdfImages(null);
-            setIsPdfLoading(false);
+            setPdfRequested(false);
         }
     };
 
@@ -156,9 +146,9 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
             onClick={handleCardClick}
         >
             <div className="recipe-image-container">
-                {imageUrl && (
+                {mainImageUrl && (
                     <img
-                        src={imageUrl}
+                        src={mainImageUrl}
                         alt={recipe.title}
                         className="recipe-image"
                     />
@@ -179,34 +169,28 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                         >
                             📖 View in Cookbook
                         </button>
-                        {!isPdfLoading && !pdfImages ? (
-                            <button
-                                className="action-button pdf-button"
-                                onClick={() => {
-                                    setIsPdfLoading(true);
-                                    loadPdfImages();
-                                }}
-                            >
-                                📄 Generate PDF
-                            </button>
-                        ) : pdfImages && pdfDocument ? (
-                            <PDFDownloadLink
-                                document={pdfDocument}
-                                fileName={`${recipe.title}.pdf`}
-                                className="action-button pdf-button"
-                            >
-                                {({ loading }) => (
-                                    <button
-                                        className="action-button pdf-button"
-                                        disabled={loading}
-                                    >
-                                        📄 {loading ? 'Preparing PDF...' : 'Download PDF'}
-                                    </button>
-                                )}
-                            </PDFDownloadLink>
+
+                        {pdfImages ? (
+                            <div className="pdf-wrapper">
+                                <PDFDownloadLink
+                                    document={<RecipePDF recipe={recipe} images={pdfImages} />}
+                                    fileName={`${recipe.title}.pdf`}
+                                    style={{ textDecoration: 'none' }}
+                                >
+                                    {({ loading }) => (
+                                        <button className="action-button" disabled={loading}>
+                                            📄 {loading ? "Preparing PDF..." : "Download PDF"}
+                                        </button>
+                                    )}
+                                </PDFDownloadLink>
+                            </div>
                         ) : (
-                            <button className="action-button pdf-button" disabled>
-                                📄 Preparing PDF...
+                            <button
+                                className="action-button"
+                                onClick={!pdfRequested ? loadPdfImages : undefined}
+                                disabled={pdfRequested}
+                            >
+                                📄 {pdfRequested ? "Preparing PDF..." : "Generate PDF"}
                             </button>
                         )}
                     </div>

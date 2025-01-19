@@ -55,26 +55,20 @@
     border-top: 1px solid #f0f0f0;
 }
 
+.action-button,
+.pdf-wrapper {
+    flex: 1 1 0;
+    width: 0;
+}
+
 .action-button {
-    flex: 1;
+    width: 100%;
     padding: 0.8rem;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.cookbook-button {
-    background: #d32f2f;
-    color: white;
-}
-
-.cookbook-button:hover {
-    background: #b71c1c;
-}
-
-.pdf-button {
+    transition: background-color 0.3s ease;
     background: #f0f0f0;
     color: #333;
     text-decoration: none;
@@ -83,19 +77,34 @@
     align-items: center;
 }
 
-.pdf-button:hover {
+.pdf-link {
+    color: inherit;
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cookbook-button {
+    background: #d32f2f;
+    color: white;
+}
+
+.cookbook-button:hover:not(:disabled) {
+    background: #b71c1c;
+}
+
+.action-button:hover:not(:disabled) {
     background: #e0e0e0;
 }
 
-.pdf-button:disabled {
+.action-button:disabled {
     background: #e0e0e0;
     cursor: not-allowed;
     opacity: 0.7;
-}
-
-a.pdf-button {
-    text-align: center;
-    line-height: normal;
+    pointer-events: none;
 }
 
 .recipe-card.expanded {
@@ -108,18 +117,4 @@ a.pdf-button {
 
 .recipe-card.single:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.pdf-button button {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-
-.pdf-button button:disabled {
-    cursor: not-allowed;
 }

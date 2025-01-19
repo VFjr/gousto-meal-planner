@@ -1,13 +1,14 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Recipe } from '../types';
 
+interface ImageData {
+    main: string | null;
+    ingredients: { [key: number]: string };
+    instructions: { [key: number]: string };
+}
 interface RecipePDFProps {
     recipe: Recipe;
-    images: {
-        main: string | null;
-        ingredients: { [key: number]: string };
-        instructions: { [key: number]: string };
-    } | null;
+    images: ImageData | null;
 }
 
 const styles = StyleSheet.create({
@@ -108,4 +109,5 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images }) => {
     );
 };
 
-export default RecipePDF;
+export { RecipePDF };
+export type { ImageData, RecipePDFProps };
