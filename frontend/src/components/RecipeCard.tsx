@@ -1,6 +1,8 @@
 import { Recipe } from '../types';
 import { getProxiedImageUrl } from '../utils/image';
 import { useEffect, useState } from 'react';
+import { PDFDownloadLink, Document, Page } from '@react-pdf/renderer';
+import RecipePDF from './RecipePDF';
 import './RecipeCard.css';
 
 interface RecipeCardProps {
@@ -61,9 +63,17 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                         >
                             📖 View in Cookbook
                         </button>
-                        <button className="action-button pdf-button">
-                            📄 Generate PDF
-                        </button>
+                        <PDFDownloadLink
+                            document={<RecipePDF recipe={recipe} />}
+                            fileName={`${recipe.title}.pdf`}
+                        >
+                            {({ blob, url, loading, error }) =>
+                                loading ? 'Loading document...' : 'Download now!'
+                            }
+                            {/* <button className="action-button pdf-button">
+                                📄 Generate PDF
+                            </button> */}
+                        </PDFDownloadLink>
                     </div>
                 )}
             </div>
