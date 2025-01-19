@@ -77,10 +77,25 @@
 .pdf-button {
     background: #f0f0f0;
     color: #333;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .pdf-button:hover {
     background: #e0e0e0;
+}
+
+.pdf-button:disabled {
+    background: #e0e0e0;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+a.pdf-button {
+    text-align: center;
+    line-height: normal;
 }
 
 .recipe-card.expanded {
@@ -93,4 +108,18 @@
 
 .recipe-card.single:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-button button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.pdf-button button:disabled {
+    cursor: not-allowed;
 }
