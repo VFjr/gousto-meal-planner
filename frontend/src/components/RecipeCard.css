@@ -76,16 +76,6 @@
     align-items: center;
 }
 
-.pdf-link {
-    color: inherit;
-    text-decoration: none;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .cookbook-button {
     background: #d32f2f;
     color: white;

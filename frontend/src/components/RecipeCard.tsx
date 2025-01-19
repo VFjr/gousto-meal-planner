@@ -204,6 +204,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                                     onClick={!pdfRequested ? loadPdfImages : undefined}
                                     disabled={pdfRequested}
                                 >
+                                    {/* Duplicate Preparing PDF message, as can only instantiate the download link once images are ready*/}
                                     📄 {pdfRequested ? "Preparing PDF..." : "Generate PDF"}
                                 </button>
                             )}
