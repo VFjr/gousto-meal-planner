@@ -177,6 +177,26 @@ const styles = StyleSheet.create({
         fontSize: 8,
         marginBottom: 3,
     },
+    // New styles for basic ingredients
+    basicIngredientsContainer: {
+        marginTop: 3,
+        paddingTop: 3,
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
+        borderTopStyle: 'solid',
+    },
+
+    basicIngredientsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 5,
+    },
+    basicIngredientItem: {
+        backgroundColor: '#f8f9fa',
+        padding: 3,
+        borderRadius: 3,
+        fontSize: 8,
+    },
 });
 
 const instructionHtmlStylesheet = {
@@ -243,6 +263,19 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) =>
                                 </View>
                             ))}
                         </View>
+
+                        {/* Add basic ingredients section */}
+                        {recipe.basic_ingredients && recipe.basic_ingredients.length > 0 && (
+                            <View style={styles.basicIngredientsContainer}>
+                                <View style={styles.basicIngredientsGrid}>
+                                    {recipe.basic_ingredients.map((ingredient, index) => (
+                                        <Text key={index} style={styles.basicIngredientItem}>
+                                            {ingredient}
+                                        </Text>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </View>
 
