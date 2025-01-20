@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 
 import jwt
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
@@ -12,6 +13,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from .database import get_session
 from .models import User, UserInDB
+
+load_dotenv()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
