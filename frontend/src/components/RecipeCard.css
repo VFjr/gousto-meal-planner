@@ -39,6 +39,7 @@
     margin: 0 0 0.5rem;
     color: #333;
     font-size: 1.5rem;
+    font-family: var(--font-family);
 }
 
 .recipe-meta {
@@ -67,26 +68,18 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
+    font-family: var(--font-family);
     transition: background-color 0.3s ease;
-    background: #f0f0f0;
-    color: #333;
+    background: #d32f2f;
+    color: white;
     text-decoration: none;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.cookbook-button {
-    background: #d32f2f;
-    color: white;
-}
-
-.cookbook-button:hover:not(:disabled) {
-    background: #b71c1c;
-}
-
 .action-button:hover:not(:disabled) {
-    background: #e0e0e0;
+    background: #b71c1c;
 }
 
 .action-button:disabled {

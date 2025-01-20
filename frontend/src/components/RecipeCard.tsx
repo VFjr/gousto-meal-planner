@@ -177,7 +177,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                     <div className="recipe-actions" onClick={e => e.stopPropagation()}>
                         <div className="button-wrapper">
                             <button
-                                className="action-button cookbook-button"
+                                className="action-button"
                                 onClick={handleCookbookClick}
                             >
                                 📖 View in Cookbook
@@ -194,7 +194,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                                     {/* @ts-expect-error - PDFDownloadLink types are incomplete */}
                                     {({ loading }) => (
                                         <button className="action-button" disabled={loading || !isPdfBlobReady}>
-                                            📄 {loading || !isPdfBlobReady ? "Preparing PDF..." : "Download PDF"}
+                                            📄 {loading || !isPdfBlobReady ? "Preparing PDF" : "Download PDF"}
                                         </button>
                                     )}
                                 </PDFDownloadLink>
@@ -205,7 +205,7 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
                                     disabled={pdfRequested}
                                 >
                                     {/* Duplicate Preparing PDF message, as can only instantiate the download link once images are ready*/}
-                                    📄 {pdfRequested ? "Preparing PDF..." : "Generate PDF"}
+                                    📄 {pdfRequested ? "Preparing PDF" : "Generate PDF"}
                                 </button>
                             )}
                         </div>
