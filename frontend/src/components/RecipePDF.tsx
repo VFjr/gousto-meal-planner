@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
+import Html from 'react-pdf-html';
 import { Recipe } from '../types';
 import { useEffect } from 'react';
 
@@ -178,6 +179,24 @@ const styles = StyleSheet.create({
     },
 });
 
+const instructionHtmlStylesheet = {
+    p: {
+        margin: 2,
+    },
+    '.text-purple': {
+        color: 'purple',
+    },
+    '.text-danger': {
+        color: 'red',
+    },
+};
+
+function adjustSpaceInHtmlTags(html: string) {
+    // https://github.com/danomatic/react-pdf-html/issues/100
+    // Use a regular expression to find <strong> or <span> tags with a leading space after them and move the space before the tag
+    return html.replace(/(<(strong|span)>)\s+/g, ' $1');
+}
+
 const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) => {
     useEffect(() => {
         // Notify parent when component is mounted (blob is being prepared)
@@ -243,9 +262,12 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) =>
                                             )}
                                         </View>
                                         <View style={styles.instructionTextContainer}>
-                                            <Text style={styles.instructionText}>
-                                                {step.order}. {step.text}
-                                            </Text>
+                                            <Html
+                                                stylesheet={instructionHtmlStylesheet}
+                                                style={{ fontSize: 8 }}
+                                            >
+                                                {adjustSpaceInHtmlTags(step.text)}
+                                            </Html>
                                         </View>
                                     </View>
                                 </View>
@@ -265,9 +287,12 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) =>
                                             )}
                                         </View>
                                         <View style={styles.instructionTextContainer}>
-                                            <Text style={styles.instructionText}>
-                                                {step.order}. {step.text}
-                                            </Text>
+                                            <Html
+                                                stylesheet={instructionHtmlStylesheet}
+                                                style={{ fontSize: 8 }}
+                                            >
+                                                {adjustSpaceInHtmlTags(step.text)}
+                                            </Html>
                                         </View>
                                     </View>
                                 </View>
