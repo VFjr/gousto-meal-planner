@@ -279,11 +279,20 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) =>
                                 <View key={step.id} style={styles.instruction}>
                                     <View style={styles.instructionContent}>
                                         <View style={styles.instructionImageContainer}>
-                                            {images.instructions[step.id] && (
-                                                <Image
-                                                    style={styles.instructionImage}
-                                                    src={images.instructions[step.id]}
-                                                />
+                                            {step.order === 8 ? (
+                                                images.main && (
+                                                    <Image
+                                                        style={styles.instructionImage}
+                                                        src={images.main}
+                                                    />
+                                                )
+                                            ) : (
+                                                images.instructions[step.id] && (
+                                                    <Image
+                                                        style={styles.instructionImage}
+                                                        src={images.instructions[step.id]}
+                                                    />
+                                                )
                                             )}
                                         </View>
                                         <View style={styles.instructionTextContainer}>
