@@ -18,6 +18,7 @@ export default function App() {
   const [visibleRecipes, setVisibleRecipes] = useState(6);
   const [recipeListItems, setRecipeListItems] = useState<RecipeListItem[]>([]);
   const [selectedIngredient, setSelectedIngredient] = useState<string>('');
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -138,10 +139,9 @@ export default function App() {
   };
 
   const handleLoadMore = async () => {
-    const nextBatch = recipeListItems.slice(visibleRecipes, visibleRecipes + 6);
-    setLoading(true);
-
+    setIsLoadingMore(true);
     try {
+      const nextBatch = recipeListItems.slice(visibleRecipes, visibleRecipes + 6);
       const newRecipes = await Promise.all(
         nextBatch.map(item => getRecipeBySlug(item.slug))
       );
@@ -150,7 +150,7 @@ export default function App() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
-      setLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -226,8 +226,16 @@ export default function App() {
           <button
             className="load-more-button"
             onClick={handleLoadMore}
+            disabled={isLoadingMore}
           >
-            Load More
+            {isLoadingMore ? (
+              <>
+                <div className="load-more-spinner" />
+                Loading...
+              </>
+            ) : (
+              'Load More'
+            )}
           </button>
         )}
       </div>
