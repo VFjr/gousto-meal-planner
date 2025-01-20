@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import { Recipe } from '../types';
 import { useEffect } from 'react';
 
@@ -13,45 +13,168 @@ interface RecipePDFProps {
     onBlobReady?: () => void;
 }
 
+// Register the Roboto font
+Font.register({
+    family: 'Inter',
+    fonts: [
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyeMZhrib2Bg-4.ttf',
+            fontWeight: 100,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuDyfMZhrib2Bg-4.ttf',
+            fontWeight: 200,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfMZhrib2Bg-4.ttf',
+            fontWeight: 300,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZhrib2Bg-4.ttf',
+            fontWeight: 400,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fMZhrib2Bg-4.ttf',
+            fontWeight: 500,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYMZhrib2Bg-4.ttf',
+            fontWeight: 600,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf',
+            fontWeight: 700,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuDyYMZhrib2Bg-4.ttf',
+            fontWeight: 800,
+        },
+        {
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuBWYMZhrib2Bg-4.ttf',
+            fontWeight: 900,
+        },
+    ],
+});
+
+
 const styles = StyleSheet.create({
     page: {
-        padding: 30,
+        padding: 15,
+        fontFamily: 'Inter',
+        flexDirection: 'column',
+        flex: 1,
+    },
+    contentContainer: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 5,
+        flexShrink: 0,
+    },
+    leftColumn: {
+        width: '35%',
+    },
+    rightColumn: {
+        width: '65%',
+    },
+    section: {
+        flex: 1,
+        flexDirection: 'column',
+    },
+    instructionsContent: {
+        flex: 1,
+        flexDirection: 'row',
+        gap: 10,
+    },
+    instructionColumn: {
+        flex: 1,
+        flexDirection: 'column',
     },
     title: {
-        fontSize: 24,
-        marginBottom: 10,
-    },
-    mainImage: {
-        width: '100%',
-        marginBottom: 20,
-    },
-    sectionTitle: {
         fontSize: 18,
         marginBottom: 10,
-        marginTop: 20,
+        color: '#d32f2f',
+        textAlign: 'center',
+        fontWeight: 'bold',
     },
-    ingredientRow: {
+    sectionTitle: {
+        fontSize: 12,
+        marginBottom: 5,
+        color: '#d32f2f',
+        fontWeight: 'bold',
+        borderBottomWidth: 1,
+        borderBottomColor: '#d32f2f',
+        borderBottomStyle: 'solid',
+    },
+    meta: {
         flexDirection: 'row',
-        alignItems: 'center',
+        gap: 10,
         marginBottom: 10,
+        color: '#666',
+        fontSize: 9,
     },
-    ingredientText: {
-        flex: 1,
-        marginRight: 10,
+    image: {
+        width: '100%',
+        height: 180,
+        objectFit: 'cover',
+        borderRadius: 5,
     },
     ingredientImage: {
-        width: 30,
-        height: 30,
-        objectFit: 'contain',
-    },
-    instructionStep: {
-        marginBottom: 10,
+        width: 20,
+        height: 20,
+        borderRadius: 8,
     },
     instructionImage: {
-        width: '100%',
-        height: 200,
-        marginTop: 10,
-        objectFit: 'contain',
+        position: 'absolute',
+        width: 60,
+        height: 100,
+        objectFit: 'cover',
+        borderRadius: 3,
+    },
+    instructionImageContainer: {
+        width: 60,
+        minWidth: 60,
+        height: 100,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    ingredientsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 5,
+    },
+    ingredientCard: {
+        width: '32%',
+        padding: 3,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 3,
+        marginBottom: 3,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
+    },
+    ingredient: {
+        fontSize: 9,
+        flex: 1,
+    },
+    instruction: {
+        flex: 1,
+        marginBottom: 5,
+    },
+    instructionContent: {
+        flex: 1,
+        flexDirection: 'row',
+        gap: 5,
+        alignItems: 'flex-start',
+    },
+    instructionTextContainer: {
+        flex: 1,
+        paddingLeft: 0,
+        flexDirection: 'column',
+        justifyContent: 'center',
+    },
+    instructionText: {
+        fontSize: 8,
+        marginBottom: 3,
     },
 });
 
@@ -65,51 +188,92 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) =>
 
     console.log('PDF Images:', images.ingredients);  // Add this line to debug
 
+    const midPoint = Math.ceil(recipe.instruction_steps.length / 2);
+    const leftColumnInstructions = recipe.instruction_steps.slice(0, midPoint);
+    const rightColumnInstructions = recipe.instruction_steps.slice(midPoint);
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                <View>
-                    <Text style={styles.title}>{recipe.title}</Text>
+                <Text style={styles.title}>{recipe.title}</Text>
 
-                    {images.main && (
-                        <Image src={images.main} style={styles.mainImage} />
-                    )}
+                <View style={styles.contentContainer}>
+                    <View style={styles.leftColumn}>
+                        {images.main && (
+                            <Image
+                                style={styles.image}
+                                src={images.main}
+                            />
+                        )}
+                    </View>
 
-                    {recipe.ingredients?.length > 0 && (
-                        <>
-                            <Text style={styles.sectionTitle}>Ingredients:</Text>
-                            {recipe.ingredients.map((recipeIngredient, index) => (
-                                <View key={index} style={styles.ingredientRow}>
-                                    <Text style={styles.ingredientText}>
-                                        {recipeIngredient.amount} {recipeIngredient.ingredient.name}
-                                    </Text>
+                    <View style={styles.rightColumn}>
+                        <Text style={styles.sectionTitle}>Ingredients</Text>
+                        <View style={styles.ingredientsGrid}>
+                            {recipe.ingredients.map((recipeIngredient) => (
+                                <View key={recipeIngredient.ingredient.id} style={styles.ingredientCard}>
                                     {images.ingredients[recipeIngredient.ingredient.id] && (
                                         <Image
-                                            src={images.ingredients[recipeIngredient.ingredient.id]}
                                             style={styles.ingredientImage}
+                                            src={images.ingredients[recipeIngredient.ingredient.id]}
                                         />
                                     )}
+                                    <Text style={styles.ingredient}>
+                                        {recipeIngredient.amount} {recipeIngredient.ingredient.name}
+                                    </Text>
                                 </View>
                             ))}
-                        </>
-                    )}
+                        </View>
+                    </View>
+                </View>
 
-                    {recipe.instruction_steps?.length > 0 && (
-                        <>
-                            <Text style={styles.sectionTitle}>Instructions:</Text>
-                            {recipe.instruction_steps.map((step, index) => (
-                                <View key={index} style={styles.instructionStep}>
-                                    <Text>{step.order}. {step.text}</Text>
-                                    {images.instructions[step.id] && (
-                                        <Image
-                                            src={images.instructions[step.id]}
-                                            style={styles.instructionImage}
-                                        />
-                                    )}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Instructions</Text>
+                    <View style={styles.instructionsContent}>
+                        <View style={styles.instructionColumn}>
+                            {leftColumnInstructions.map((step) => (
+                                <View key={step.id} style={styles.instruction}>
+                                    <View style={styles.instructionContent}>
+                                        <View style={styles.instructionImageContainer}>
+                                            {images.instructions[step.id] && (
+                                                <Image
+                                                    style={styles.instructionImage}
+                                                    src={images.instructions[step.id]}
+                                                />
+                                            )}
+                                        </View>
+                                        <View style={styles.instructionTextContainer}>
+                                            <Text style={styles.instructionText}>
+                                                {step.order}. {step.text}
+                                            </Text>
+                                        </View>
+                                    </View>
                                 </View>
                             ))}
-                        </>
-                    )}
+                        </View>
+
+                        <View style={styles.instructionColumn}>
+                            {rightColumnInstructions.map((step) => (
+                                <View key={step.id} style={styles.instruction}>
+                                    <View style={styles.instructionContent}>
+                                        <View style={styles.instructionImageContainer}>
+                                            {images.instructions[step.id] && (
+                                                <Image
+                                                    style={styles.instructionImage}
+                                                    src={images.instructions[step.id]}
+                                                />
+                                            )}
+                                        </View>
+                                        <View style={styles.instructionTextContainer}>
+                                            <Text style={styles.instructionText}>
+                                                {step.order}. {step.text}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
                 </View>
             </Page>
         </Document>
