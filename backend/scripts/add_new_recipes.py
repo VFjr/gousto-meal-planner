@@ -29,12 +29,16 @@ if not USERNAME or not PASSWORD:
 
 async def get_access_token():
     async with httpx.AsyncClient(timeout=20.0) as client:
-        response = await client.post(
-            f"{BASE_URL}/token",
-            data={"username": USERNAME, "password": PASSWORD},
-        )
-        response.raise_for_status()
-        return response.json()["access_token"]
+        try:
+            response = await client.post(
+                f"{BASE_URL}/token",
+                data={"username": USERNAME, "password": PASSWORD},
+            )
+            response.raise_for_status()
+            return response.json()["access_token"]
+        except httpx.HTTPStatusError as e:
+            print(f"Failed to get access token: {e.response.text}")
+            raise
 
 
 async def fetch_new_recipes(token: str):
@@ -68,11 +72,12 @@ async def main():
 
     print(f"Found {total_recipes} new recipes to add")
 
-    semaphore = asyncio.Semaphore(20)
+    semaphore = asyncio.Semaphore(2)
 
     async def add_recipe_with_semaphore(slug, index):
         async with semaphore:
             try:
+                print(f"[{index}/{total_recipes}] Adding recipe with slug: {slug}")
                 added_recipe = await add_recipe(slug, token)
                 print(
                     f"[{index}/{total_recipes}] Successfully added recipe: {added_recipe['title']}"

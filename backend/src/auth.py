@@ -66,7 +66,7 @@ async def get_current_user(
     except InvalidTokenError:
         raise credentials_exception
 
-    statement = select(User).where(User.username == username)
+    statement = select(UserInDB).where(UserInDB.username == username)
     result = await session.exec(statement)
     user = result.one_or_none()
 

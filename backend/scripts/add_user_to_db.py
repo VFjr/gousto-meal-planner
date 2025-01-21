@@ -19,8 +19,10 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 POSTGRES_DB = os.getenv("POSTGRES_DB")
 
 # Database URL
-DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
-
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
+)
 # Create an asynchronous engine
 async_engine = create_async_engine(DATABASE_URL, echo=True)
 
