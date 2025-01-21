@@ -6,6 +6,9 @@ import asyncio
 
 import httpx
 
+
+# TODO: This needs to use authorization
+
 BASE_URL = "http://127.0.0.1:8000"  # Adjust the base URL as needed
 
 
