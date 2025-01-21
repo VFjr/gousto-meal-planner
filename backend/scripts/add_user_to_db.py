@@ -3,12 +3,15 @@
 import argparse
 import asyncio
 import os
+from dotenv import load_dotenv
 
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.models import UserInDB
+
+load_dotenv()
 
 # Load environment variables
 POSTGRES_USER = os.getenv("POSTGRES_USER")
