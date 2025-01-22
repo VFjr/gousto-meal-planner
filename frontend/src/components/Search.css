@@ -19,6 +19,7 @@
     transition: all 0.3s ease;
     border-radius: 6px;
     margin: 0;
+    color: #333;
 }
 
 .toggle-button.active {
