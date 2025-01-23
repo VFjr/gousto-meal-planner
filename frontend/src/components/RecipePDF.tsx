@@ -225,8 +225,6 @@ const RecipePDF: React.FC<RecipePDFProps> = ({ recipe, images, onBlobReady }) =>
 
     if (!images) return null;
 
-    console.log('PDF Images:', images.ingredients);  // Add this line to debug
-
     const midPoint = Math.ceil(recipe.instruction_steps.length / 2);
     const leftColumnInstructions = recipe.instruction_steps.slice(0, midPoint);
     const rightColumnInstructions = recipe.instruction_steps.slice(midPoint);

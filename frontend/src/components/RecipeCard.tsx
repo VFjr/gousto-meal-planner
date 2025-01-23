@@ -51,8 +51,6 @@ export function RecipeCard({ recipe, isSingleRecipe = false }: RecipeCardProps) 
             return;
         }
 
-        console.log('Loading PDF images...');
-
         setPdfRequested(true);
 
         try {
