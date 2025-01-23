@@ -99,12 +99,23 @@ export default function App() {
     setRecipes([]);
     setLoading(true);
     setVisibleRecipes(6);
+    setSelectedIngredient('');
+    setSearchType('url');
 
     try {
-      const randomIndex = Math.floor(Math.random() * recipeListItems.length);
-      const randomRecipe = recipeListItems[randomIndex];
-      const recipeData = await getRecipeBySlug(randomRecipe.slug);
-      setRecipe(recipeData);
+      // First get the full list of recipes
+      const fullRecipeList = await getRecipesList();
+
+      // Then shuffle and take 20 random recipes
+      const shuffledRecipes = [...fullRecipeList]
+        .sort(() => Math.random() - 0.5);
+
+      setRecipeListItems(shuffledRecipes);
+
+      const initialRecipes = await Promise.all(
+        shuffledRecipes.slice(0, 6).map(item => getRecipeBySlug(item.slug))
+      );
+      setRecipes(initialRecipes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
