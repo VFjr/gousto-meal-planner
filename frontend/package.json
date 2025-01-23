@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "dotenv -e .env.development vite",
+    "dev-remote": "dotenv -e .env.dev-remote vite --port 5173",
     "build": "dotenv -e .env.production tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
