@@ -6,6 +6,10 @@ import { getRecipeBySlug, getRecipesList, RecipeListItem, getIngredientsList, ge
 import { RecipeCard } from './components/RecipeCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { SearchDropdown } from './components/SearchDropdown';
+import ReactGA from 'react-ga4';
+import { GA_MEASUREMENT_ID } from './config';
+
+ReactGA.initialize(GA_MEASUREMENT_ID);
 
 export default function App() {
   const [searchType, setSearchType] = useState<SearchType>('url');
@@ -19,6 +23,10 @@ export default function App() {
   const [recipeListItems, setRecipeListItems] = useState<RecipeListItem[]>([]);
   const [selectedIngredient, setSelectedIngredient] = useState<string>('');
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: `/search/${searchType}` });
+  }, [searchType]);
 
   useEffect(() => {
     const loadRecipes = async () => {
