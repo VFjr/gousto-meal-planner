@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+from sqlalchemy import String
 
 
 # Image Link
@@ -60,6 +61,7 @@ class IngredientBase(SQLModel):
 class Ingredient(IngredientBase, table=True):
     __tablename__ = "ingredient"
     id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(sa_column=Column(String, unique=True))
     images: List[ImageURL] = Relationship(
         back_populates="ingredient", cascade_delete=True
     )
@@ -111,6 +113,7 @@ class BaseRecipe(SQLModel):
 class Recipe(BaseRecipe, table=True):
     __tablename__ = "recipe"
     id: int | None = Field(default=None, primary_key=True)
+    slug: str = Field(index=True)
 
     basic_ingredients: List[str] = Field(
         default_factory=list,
